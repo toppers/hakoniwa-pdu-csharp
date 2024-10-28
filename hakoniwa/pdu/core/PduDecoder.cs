@@ -10,10 +10,10 @@ namespace hakoniwa.pdu.core
         {
             loader = ldr;
         }
-        public Pdu Decode(string name, string typeName, string packageName, byte[] raw_data)
+        public Pdu Decode(string name, string packageName, string typeName, byte[] raw_data)
         {
             var definition = loader.LoadDefinition(packageName + "/" + typeName);
-            Pdu dst = new Pdu(name, typeName, packageName, definition);
+            Pdu dst = new Pdu(name, packageName, typeName, definition);
             var meta = new HakoPduMetaDataType(raw_data);
             ConvertFromStruct(dst, meta, HakoPduMetaDataType.PduMetaDataSize, raw_data);
             return dst;

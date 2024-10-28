@@ -29,7 +29,7 @@ namespace hakoniwa.pdu.core
             { "string", typeof(string) }
         };
 
-        public Pdu(string name, string typeName, string packageName, PduDataDefinition definition)
+        public Pdu(string name, string packageName, string typeName, PduDataDefinition definition)
         {
             this.Name = name;
             this.TypeName = typeName;
