@@ -15,6 +15,11 @@
     <None Remove="hakoniwa\pdu\" />
     <None Remove="hakoniwa\pdu\core\" />
     <None Remove="hakoniwa\pdu\interfaces\" />
+    <None Remove="hakoniwa\environment\" />
+    <None Remove="hakoniwa\environment\interfaces\" />
+    <None Remove="hakoniwa\environment\impl\" />
+    <None Remove="hakoniwa\environment\impl\local\" />
+    <None Remove="hakoniwa\environment\impl\unity\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="hakoniwa\" />
@@ -22,5 +27,10 @@
     <Folder Include="hakoniwa\pdu\" />
     <Folder Include="hakoniwa\pdu\core\" />
     <Folder Include="hakoniwa\pdu\interfaces\" />
+    <Folder Include="hakoniwa\environment\" />
+    <Folder Include="hakoniwa\environment\interfaces\" />
+    <Folder Include="hakoniwa\environment\impl\" />
+    <Folder Include="hakoniwa\environment\impl\local\" />
+    <Folder Include="hakoniwa\environment\impl\unity\" />
   </ItemGroup>
 </Project>
