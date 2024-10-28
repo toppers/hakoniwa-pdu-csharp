@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace hakoniwa.pdu.core
 {
@@ -20,6 +21,11 @@ namespace hakoniwa.pdu.core
             }
             return null;
         }
+        public Dictionary<string, PduFieldDefinition> Get()
+        {
+            return fieldDefinitions;
+        }
+
     }
     public class PduArrayFieldDefinition
     {
@@ -42,5 +48,33 @@ namespace hakoniwa.pdu.core
         public int ByteMemberOffset { get; set; }
         public int ByteMemberDataTypeSize { get; set; }
         public PduArrayFieldDefinition ArrayInfo { get; set; }
+
+        public string GetPackageName()
+        {
+            return DataTypeName.Split("/")[0];
+        }
+        public string GetTypeName()
+        {
+            return DataTypeName.Split("/")[1];
+        }
+    }
+    public class HakoPduMetaDataType
+    {
+        public static readonly int PduMetaDataSize = 24;
+        public static readonly uint PduMetaDataMagicNo = 0x12345678;
+        public static readonly uint PduMetaDataVersion = 1;
+        public uint magicno { get; set; }
+        public uint version { get; set; }
+        public uint base_off { get; set; }
+        public uint heap_off { get; set; }
+        public uint total_size;
+        public HakoPduMetaDataType(byte[] raw_data)
+        {
+            magicno = BitConverter.ToUInt32(raw_data, 0);
+            version = BitConverter.ToUInt32(raw_data, 4);
+            base_off = BitConverter.ToUInt32(raw_data, 8);
+            heap_off = BitConverter.ToUInt32(raw_data, 12);
+            total_size = BitConverter.ToUInt32(raw_data, 16);
+        }
     }
 }

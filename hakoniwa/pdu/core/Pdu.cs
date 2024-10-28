@@ -4,7 +4,7 @@ using hakoniwa.pdu.interfaces;
 
 namespace hakoniwa.pdu.core
 {
-    public class Pdu : IPduOperation
+    public class Pdu : IPdu
     {
         private Dictionary<string, object> fields = new Dictionary<string, object>();
 
@@ -36,7 +36,10 @@ namespace hakoniwa.pdu.core
             this.PackageName = packageName;
             this.pdu_definition = definition ?? throw new ArgumentNullException(nameof(definition));
         }
-
+        public PduDataDefinition GetPduDefinition()
+        {
+            return pdu_definition;
+        }
         private PduFieldDefinition GetFieldDefinitionOrThrow(string field_name)
         {
             var field = pdu_definition.GetFieldDefinition(field_name);
@@ -129,6 +132,27 @@ namespace hakoniwa.pdu.core
                 return (T[])array.Clone();
             }
             throw new InvalidCastException($"Field '{field_name}' does not contain an array of type {typeof(T)} in PDU '{this.Name}'.");
+        }
+
+        public void SetData<T>(string field_name, int off, T value)
+        {
+            if (!fields.ContainsKey(field_name))
+            {
+                throw new KeyNotFoundException($"Field '{field_name}' does not exist in the PDU.");
+            }
+
+            if (fields[field_name] == null || !(fields[field_name] is T[] array))
+            {
+                array = new T[off + 1];
+                fields[field_name] = array;
+            }
+
+            if (off >= array.Length)
+            {
+                Array.Resize(ref array, off + 1);
+                fields[field_name] = array;
+            }
+            array[off] = value;
         }
     }
 }
