@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>hakoniwa_pdu_csharp</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="src\" />
+    <None Remove="src\core\" />
+    <None Remove="src\core\interface\" />
+    <None Remove="src\core\model\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="src\" />
+    <Folder Include="src\core\" />
+    <Folder Include="src\core\interface\" />
+    <Folder Include="src\core\model\" />
+  </ItemGroup>
+</Project>
