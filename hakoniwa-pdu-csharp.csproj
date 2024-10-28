@@ -11,11 +11,13 @@
     <None Remove="src\core\" />
     <None Remove="src\core\interface\" />
     <None Remove="src\core\model\" />
+    <None Remove="tests\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\" />
     <Folder Include="src\core\" />
     <Folder Include="src\core\interface\" />
     <Folder Include="src\core\model\" />
+    <Folder Include="tests\" />
   </ItemGroup>
 </Project>
