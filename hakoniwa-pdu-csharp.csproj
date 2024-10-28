@@ -12,12 +12,15 @@
     <None Remove="src\core\interface\" />
     <None Remove="src\core\model\" />
     <None Remove="tests\" />
+    <None Remove="hakoniwa\pdu\" />
+    <None Remove="hakoniwa\pdu\core\" />
+    <None Remove="hakoniwa\pdu\interfaces\" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="src\" />
-    <Folder Include="src\core\" />
-    <Folder Include="src\core\interfaces\" />
-    <Folder Include="src\core\model\" />
+    <Folder Include="hakoniwa\" />
     <Folder Include="tests\" />
+    <Folder Include="hakoniwa\pdu\" />
+    <Folder Include="hakoniwa\pdu\core\" />
+    <Folder Include="hakoniwa\pdu\interfaces\" />
   </ItemGroup>
 </Project>
