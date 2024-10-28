@@ -65,44 +65,54 @@ namespace hakoniwa.pdu.core
 
         private int GetSize(PduFieldDefinition elm, string[] attr)
         {
-            if (elm.IsPrimitive)
+            switch (elm.Type)
             {
-                return elm.ByteOffset + elm.ByteSize;
+                case PduFieldDefinition.FieldType.Single:
+                    return elm.ByteMemberOffset + elm.ByteMemberDataTypeSize;
+
+                case PduFieldDefinition.FieldType.FixedArray:
+                    return elm.ByteMemberOffset + (elm.ByteMemberDataTypeSize * elm.ArrayInfo.ArrayLen);
+
+                case PduFieldDefinition.FieldType.VariableArray:
+                    return elm.ByteMemberOffset + int.Parse(attr[6]);
+
+                default:
+                    throw new InvalidOperationException($"Unsupported type for field {elm.MemberName}");
             }
-            else if (elm.IsArray)
-            {
-                return elm.ByteOffset + (elm.ByteSize * elm.ArrayInfo.ArrayLen);
-            }
-            else if (elm.IsVarray)
-            {
-                return elm.ByteOffset + int.Parse(attr[6]);
-            }
-            throw new InvalidOperationException($"Unsupported type for field {elm.MemberName}");
+        }
+        private int GetDataTypeSize(string[] attr)
+        {
+            return attr[0] != "array" ? int.Parse(attr[5]) : int.Parse(attr[5]) / int.Parse(attr[6]);
         }
 
         private PduFieldDefinition CreateFieldDefinition(string[] attr, string package_name)
         {
             PduFieldDefinition elm = new PduFieldDefinition
             {
-                IsArray = attr[0].Equals("array"),
-                IsVarray = attr[0].Equals("varray"),
+                Type = attr[0] switch
+                {
+                    "array" => PduFieldDefinition.FieldType.FixedArray,
+                    "varray" => PduFieldDefinition.FieldType.VariableArray,
+                    _ => PduFieldDefinition.FieldType.Single
+                },
                 IsPrimitive = attr[1].Equals("primitive"),
                 MemberName = attr[2],
                 DataTypeName = attr[3].Contains("/") || IsPrimitive(attr[3]) ? attr[3] : package_name + "/" + attr[3],
-                ByteOffset = int.Parse(attr[4]),
-                ByteSize = int.Parse(attr[5])
+                ByteMemberOffset = int.Parse(attr[4]),
+                ByteMemberDataTypeSize = GetDataTypeSize(attr)
             };
 
-            if (elm.IsArray || elm.IsVarray)
+            if (elm.Type != PduFieldDefinition.FieldType.Single)
             {
                 elm.ArrayInfo = new PduArrayFieldDefinition
                 {
-                    ArrayLen = elm.IsArray ? int.Parse(attr[6]) : -1
+                    ArrayLen = elm.Type == PduFieldDefinition.FieldType.FixedArray ? int.Parse(attr[6]) : -1
                 };
-                elm.ByteSize = elm.IsArray ? elm.ByteSize / elm.ArrayInfo.ArrayLen : elm.ByteSize;
             }
+
             return elm;
         }
+
 
         private static bool IsPrimitive(string type_name)
         {

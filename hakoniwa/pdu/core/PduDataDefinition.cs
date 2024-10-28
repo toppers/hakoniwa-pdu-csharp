@@ -21,24 +21,26 @@ namespace hakoniwa.pdu.core
             throw new KeyNotFoundException($"Field '{fieldName}' not found in PDU definition.");
         }
     }
-
     public class PduArrayFieldDefinition
     {
-        public bool is_fixed;
         public int ArrayLen { get; set; }
-        public int HeapOffset { get; set; }
     }
 
     public class PduFieldDefinition
     {
-        public bool IsArray { get; set; }
-        public bool IsVarray { get; set; }
+        public enum FieldType
+        {
+            Single,       // 配列ではない単一のメンバ
+            FixedArray,   // 固定長の配列
+            VariableArray // 可変長の配列
+        }
+        public FieldType Type { get; set; }
         public bool IsPrimitive { get; set; }
-        public string DataKind { get; set; }
         public string MemberName { get; set; }
+        //format: "<package_name>/<type_name>"
         public string DataTypeName { get; set; }
-        public int ByteOffset { get; set; }
-        public int ByteSize { get; set; }
+        public int ByteMemberOffset { get; set; }
+        public int ByteMemberDataTypeSize { get; set; }
         public PduArrayFieldDefinition ArrayInfo { get; set; }
     }
 }
