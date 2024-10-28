@@ -18,7 +18,7 @@ namespace hakoniwa.pdu.core
             {
                 return fieldDefinitions[fieldName];
             }
-            throw new KeyNotFoundException($"Field '{fieldName}' not found in PDU definition.");
+            return null;
         }
     }
     public class PduArrayFieldDefinition

@@ -11,94 +11,124 @@ namespace hakoniwa.pdu.core
         public string Name { get; }
         public string TypeName { get; }
         public string PackageName { get; }
+        private readonly PduDataDefinition pdu_definition;
 
-        public Pdu(string name, string typeName, string packageName)
+        private static readonly Dictionary<string, Type> RosToCSharpTypeMap = new Dictionary<string, Type>
+        {
+            { "int8", typeof(sbyte) },
+            { "int16", typeof(short) },
+            { "int32", typeof(int) },
+            { "int64", typeof(long) },
+            { "uint8", typeof(byte) },
+            { "uint16", typeof(ushort) },
+            { "uint32", typeof(uint) },
+            { "uint64", typeof(ulong) },
+            { "float32", typeof(float) },
+            { "float64", typeof(double) },
+            { "bool", typeof(bool) },
+            { "string", typeof(string) }
+        };
+
+        public Pdu(string name, string typeName, string packageName, PduDataDefinition definition)
         {
             this.Name = name;
             this.TypeName = typeName;
             this.PackageName = packageName;
+            this.pdu_definition = definition ?? throw new ArgumentNullException(nameof(definition));
         }
 
-        // データをセット（初期設定か型チェック）
+        private PduFieldDefinition GetFieldDefinitionOrThrow(string field_name)
+        {
+            var field = pdu_definition.GetFieldDefinition(field_name);
+            if (field == null)
+            {
+                throw new KeyNotFoundException($"Field '{field_name}' does not exist in the PDU '{this.Name}' of type '{this.TypeName}'.");
+            }
+            return field;
+        }
+
         public void SetData<T>(string field_name, T value)
         {
-            if (!fields.ContainsKey(field_name))
+            var field = GetFieldDefinitionOrThrow(field_name);
+
+            if (field.IsPrimitive)
             {
-                // 初回呼び出しの場合、フィールドを新規追加
-                fields[field_name] = value;
+                // プリミティブ型の場合は、ROS型とC#型のマップを確認して型が一致するかをチェック
+                if (RosToCSharpTypeMap.TryGetValue(field.DataTypeName, out Type expectedType))
+                {
+                    if (expectedType != typeof(T))
+                    {
+                        throw new InvalidCastException($"Field '{field_name}' expects data of type {expectedType.Name}, but {typeof(T).Name} was provided.");
+                    }
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Unsupported primitive type '{field.DataTypeName}' for field '{field_name}'.");
+                }
             }
             else
             {
-                // 2回目以降は型の整合性をチェック
-                ValidateType(field_name, value);
-                fields[field_name] = value;
+                // 非プリミティブ型の場合、valueはIPduであることを確認する
+                if (!(value is IPdu))
+                {
+                    throw new InvalidCastException($"Field '{field_name}' expects an IPdu type, but {typeof(T).Name} was provided.");
+                }
             }
+
+            fields[field_name] = value;
         }
 
-        // 配列データをセット（初期設定か型チェック）
         public void SetData<T>(string field_name, T[] value)
         {
-            if (!fields.ContainsKey(field_name))
+            var field = GetFieldDefinitionOrThrow(field_name);
+            if (value == null)
             {
-                fields[field_name] = value.Clone(); // 初回呼び出しでフィールドを新規追加
+                throw new ArgumentNullException(nameof(value), $"Field '{field_name}' cannot be set to null.");
+            }
+
+            if (field.IsPrimitive)
+            {
+                if (RosToCSharpTypeMap.TryGetValue(field.DataTypeName, out Type expectedType))
+                {
+                    if (expectedType != typeof(T))
+                    {
+                        throw new InvalidCastException($"Field '{field_name}' expects an array of type {expectedType.Name}, but {typeof(T).Name} was provided.");
+                    }
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Unsupported primitive type '{field.DataTypeName}' for field '{field_name}'.");
+                }
             }
             else
             {
-                ValidateType(field_name, value);
-                fields[field_name] = value.Clone(); // 2回目以降は型をチェックしてから更新
+                if (!(value is IPdu[]))
+                {
+                    throw new InvalidCastException($"Field '{field_name}' expects an array of IPdu type, but {typeof(T).Name} was provided.");
+                }
             }
+
+            fields[field_name] = value.Clone();
         }
 
-        // データの取得（存在確認と型チェック）
         public T GetData<T>(string field_name)
         {
-            ValidateFieldExists(field_name);
-
+            var field = GetFieldDefinitionOrThrow(field_name);
             if (fields[field_name] is T value)
             {
                 return value;
             }
-            throw new InvalidCastException($"Field '{field_name}' does not contain data of type {typeof(T)}.");
+            throw new InvalidCastException($"Field '{field_name}' does not contain data of type {typeof(T)} in PDU '{this.Name}'.");
         }
 
-        // 配列データの取得（存在確認と型チェック）
         public T[] GetDataArray<T>(string field_name)
         {
-            ValidateFieldExists(field_name);
-
+            var field = GetFieldDefinitionOrThrow(field_name);
             if (fields[field_name] is T[] array)
             {
                 return (T[])array.Clone();
             }
-            throw new InvalidCastException($"Field '{field_name}' does not contain an array of type {typeof(T)}.");
-        }
-
-        // バリデーション：フィールドが存在するか確認
-        private void ValidateFieldExists(string field_name)
-        {
-            if (string.IsNullOrEmpty(field_name))
-            {
-                throw new ArgumentException("Field name cannot be null or empty.");
-            }
-
-            if (!fields.ContainsKey(field_name))
-            {
-                throw new KeyNotFoundException($"Field '{field_name}' does not exist in the PDU.");
-            }
-        }
-
-        // バリデーション：既存の型と一致するか確認
-        private void ValidateType<T>(string field_name, T value)
-        {
-            Type existingType = fields[field_name].GetType();
-            Type newType = value.GetType();
-
-            if (existingType != newType)
-            {
-                throw new InvalidOperationException(
-                    $"Cannot set field '{field_name}' with a different data type. " +
-                    $"Existing type: {existingType}, new type: {newType}.");
-            }
+            throw new InvalidCastException($"Field '{field_name}' does not contain an array of type {typeof(T)} in PDU '{this.Name}'.");
         }
     }
 }
