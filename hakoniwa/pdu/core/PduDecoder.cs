@@ -45,15 +45,13 @@ namespace hakoniwa.pdu.core
                     //struct
                     if (elm.Type == PduFieldDefinition.FieldType.FixedArray)
                     {
-                        //TODO
-                        //ConvertFromStructArray(meta, elm, base_off, elm.offset, elm.array_size, src_buffer, dst);
+                        ConvertFromStructArray(dst, meta, elm, base_off, elm.ByteMemberOffset, elm.ByteMemberDataTypeSize, src_buffer);
                     }
                     else if (elm.Type == PduFieldDefinition.FieldType.VariableArray)
                     {
                         int array_size = BitConverter.ToInt32(src_buffer, base_off + elm.ByteMemberOffset);
                         int offset_from_heap = BitConverter.ToInt32(src_buffer, base_off + elm.ByteMemberOffset + 4);
-                        //TODO
-                        //ConvertFromStructArray(meta, elm, (int)meta.heap_off, offset_from_heap, array_size, src_buffer, dst);
+                        ConvertFromStructArray(dst, meta, elm, (int)meta.heap_off, offset_from_heap, array_size, src_buffer);
                     }
                     else
                     {
