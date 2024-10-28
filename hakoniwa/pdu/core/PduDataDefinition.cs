@@ -4,12 +4,12 @@ namespace hakoniwa.pdu.core
 {
     public class PduDataDefinition
     {
+        public int TotalSize { get; set; }
         private Dictionary<string, PduFieldDefinition> fieldDefinitions;
 
-        // コンストラクタで初期化、またはデータ読み込みメソッド
-        public PduDataDefinition(Dictionary<string, PduFieldDefinition> definitions)
+        public PduDataDefinition(Dictionary<string, PduFieldDefinition> pdu_field_definitions)
         {
-            this.fieldDefinitions = definitions;
+            this.fieldDefinitions = pdu_field_definitions;
         }
 
         public PduFieldDefinition GetFieldDefinition(string fieldName)
@@ -22,13 +22,23 @@ namespace hakoniwa.pdu.core
         }
     }
 
+    public class PduArrayFieldDefinition
+    {
+        public bool is_fixed;
+        public int ArrayLen { get; set; }
+        public int HeapOffset { get; set; }
+    }
+
     public class PduFieldDefinition
     {
-        public string ArrayType { get; set; }
-        public string DataType { get; set; }
+        public bool IsArray { get; set; }
+        public bool IsVarray { get; set; }
+        public bool IsPrimitive { get; set; }
+        public string DataKind { get; set; }
         public string MemberName { get; set; }
         public string DataTypeName { get; set; }
         public int ByteOffset { get; set; }
         public int ByteSize { get; set; }
+        public PduArrayFieldDefinition ArrayInfo { get; set; }
     }
 }
