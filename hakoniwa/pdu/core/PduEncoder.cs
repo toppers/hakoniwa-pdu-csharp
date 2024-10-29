@@ -103,6 +103,7 @@ namespace hakoniwa.pdu.core
                     {
                         int offset_from_heap = heap_allocator.Size;
                         int array_size = ConvertFromPrimtiveArray(0, elm, heap_allocator, src);
+                        //Console.WriteLine($"{fieldName}: {array_size}");
                         var offset_from_heap_bytes = BitConverter.GetBytes(offset_from_heap);
                         var array_size_bytes = BitConverter.GetBytes(array_size);
                         allocator.Add(array_size_bytes, parent_off + elm.ByteMemberOffset, array_size_bytes.Length);

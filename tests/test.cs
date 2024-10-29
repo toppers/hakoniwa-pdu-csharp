@@ -118,15 +118,28 @@ namespace hakoniwa.pdu.test
             IPdu image_pdu = pdu.GetData<IPdu>("image");
             Assert.IsTrue(image_pdu != null, "Create HakoCameraData: image_pdu is created");
             byte[] images = image_pdu.GetDataArray<byte>("data");
-            Assert.IsTrue(images [0] == 0, "Write HakoCameraData: image is empty");
+            Assert.IsTrue(images[0] == 0, "Write HakoCameraData: image is empty");
 
             /*
              * Write Test.
              */
+            images = new byte[128];
+            images[0] = (byte)'a';
+            images[127] = (byte)'b';
+            image_pdu.SetData<Byte>("data", images);
+            var test_images = pdu.GetData<IPdu>("image").GetDataArray<Byte>("data");
+            Assert.IsTrue(images[127] == 'b', "Write HakoCameraData: image is ok");
+            mgr.WritePdu(robotName, pdu);
+
 
             /*
              * Read Test.
              */
+            IPdu rpdu = mgr.ReadPdu(robotName, pduName);
+            Assert.IsTrue(rpdu != null, "Read Twist: pdu is created");
+            byte[] rimages = rpdu.GetData<IPdu>("image").GetDataArray<Byte>("data");
+            Assert.IsTrue(rimages[0] == 'a', "Read HakoCameraData: images[0] is OK");
+            Assert.IsTrue(rimages[127] == 'b', "Read HakoCameraData: images[127] is OK");
 
 
             mgr.StopService();

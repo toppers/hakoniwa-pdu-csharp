@@ -27,17 +27,20 @@ namespace hakoniwa.pdu.core
                     //primitive
                     if (elm.Type == PduFieldDefinition.FieldType.FixedArray)
                     {
+                        SetEmptyPrimitiveArray(dst, elm, elm.ArrayInfo.ArrayLen);
                         ConvertFromPrimtiveArray(dst, elm, base_off, elm.ByteMemberOffset, elm.ByteMemberDataTypeSize, src_buffer);
                     }
                     else if (elm.Type == PduFieldDefinition.FieldType.VariableArray)
                     {
                         int array_size = BitConverter.ToInt32(src_buffer, base_off + elm.ByteMemberOffset);
+                        //Console.WriteLine($"DEC {fieldName}:  {array_size}");
                         if (array_size == 0)
                         {
-                            SetEmptyPrimitiveArray(dst, elm);
+                            SetEmptyPrimitiveArray(dst, elm, 1);
                         }
                         else
                         {
+                            SetEmptyPrimitiveArray(dst, elm, array_size);
                             int offset_from_heap = BitConverter.ToInt32(src_buffer, base_off + elm.ByteMemberOffset + 4);
                             ConvertFromPrimtiveArray(dst, elm, (int)meta.heap_off, offset_from_heap, array_size, src_buffer);
                         }
@@ -130,46 +133,49 @@ namespace hakoniwa.pdu.core
                     throw new InvalidCastException("Error: Can not found ptype: " + elm.MemberName);
             }
         }
-        private static void SetEmptyPrimitiveArray(IPdu dst, PduFieldDefinition elm)
+        private static void SetEmptyPrimitiveArray(IPdu dst, PduFieldDefinition elm, int array_size)
         {
             switch (elm.DataTypeName)
             {
                 case "int8":
-                    dst.SetData<SByte>(elm.MemberName, new SByte[1]);
+                    dst.SetData<SByte>(elm.MemberName, new SByte[array_size]);
                     break;
                 case "int16":
-                    dst.SetData<Int16>(elm.MemberName, new Int16[1]);
+                    dst.SetData<Int16>(elm.MemberName, new Int16[array_size]);
                     break;
                 case "int32":
-                    dst.SetData<Int32>(elm.MemberName, new Int32[1]);
+                    dst.SetData<Int32>(elm.MemberName, new Int32[array_size]);
                     break;
                 case "int64":
-                    dst.SetData<Int64>(elm.MemberName, new Int64[1]);
+                    dst.SetData<Int64>(elm.MemberName, new Int64[array_size]);
                     break;
                 case "uint8":
-                    dst.SetData<Byte>(elm.MemberName, new Byte[1]);
+                    dst.SetData<Byte>(elm.MemberName, new Byte[array_size]);
                     break;
                 case "uint16":
-                    dst.SetData<UInt16>(elm.MemberName, new UInt16[1]);
+                    dst.SetData<UInt16>(elm.MemberName, new UInt16[array_size]);
                     break;
                 case "uint32":
-                    dst.SetData<UInt32>(elm.MemberName, new UInt32[1]);
+                    dst.SetData<UInt32>(elm.MemberName, new UInt32[array_size]);
                     break;
                 case "uint64":
-                    dst.SetData<UInt64>(elm.MemberName, new UInt64[1]);
+                    dst.SetData<UInt64>(elm.MemberName, new UInt64[array_size]);
                     break;
                 case "float32":
-                    dst.SetData<float>(elm.MemberName, new float[1]);
+                    dst.SetData<float>(elm.MemberName, new float[array_size]);
                     break;
                 case "float64":
-                    dst.SetData<double>(elm.MemberName, new double[1]);
+                    dst.SetData<double>(elm.MemberName, new double[array_size]);
                     break;
                 case "bool":
-                    dst.SetData<bool>(elm.MemberName, new bool[1]);
+                    dst.SetData<bool>(elm.MemberName, new bool[array_size]);
                     break;
                 case "string":
-                    var strs = new string[1];
-                    strs[0] =  "";
+                    var strs = new string[array_size];
+                    for (int i = 0; i < array_size; i++)
+                    {
+                        strs[i] = "";
+                    }
                     dst.SetData<string>(elm.MemberName, strs);
                     break;
                 default:
