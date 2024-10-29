@@ -20,6 +20,7 @@
     <None Remove="hakoniwa\environment\impl\" />
     <None Remove="hakoniwa\environment\impl\local\" />
     <None Remove="hakoniwa\environment\impl\unity\" />
+    <None Remove="Newtonsoft.Json" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="hakoniwa\" />
@@ -32,5 +33,8 @@
     <Folder Include="hakoniwa\environment\impl\" />
     <Folder Include="hakoniwa\environment\impl\local\" />
     <Folder Include="hakoniwa\environment\impl\unity\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 </Project>

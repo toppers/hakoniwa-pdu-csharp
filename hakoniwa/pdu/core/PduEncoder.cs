@@ -52,7 +52,7 @@ namespace hakoniwa.pdu.core
             loader = ldr;
         }
 
-        public byte[] ConvertToIoData(Pdu src)
+        public byte[] Encode(Pdu src)
         {
             string package_type_name = src.GetPackageTypeName();
             var def = loader.LoadDefinition(package_type_name);
