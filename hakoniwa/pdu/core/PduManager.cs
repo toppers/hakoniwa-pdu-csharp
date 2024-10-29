@@ -19,7 +19,7 @@ namespace hakoniwa.pdu.core
             service = srv;
             pdu_definition_loader = new PduDataDefinitionLoader(service.GetFileLoader());
             PduChannelLoader pdu_channel_loader= new PduChannelLoader(service.GetFileLoader());
-            pdu_channel_config = pdu_channel_loader.Load("TODO");
+            pdu_channel_config = pdu_channel_loader.Load("custom", ".json");
         }
         public bool StartService()
         {

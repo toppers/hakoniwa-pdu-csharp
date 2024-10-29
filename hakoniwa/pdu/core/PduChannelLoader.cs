@@ -65,9 +65,9 @@ namespace hakoniwa.pdu.core
             fileLoader = loader;
         }
 
-        public PduChannelConfig Load(string filePath)
+        public PduChannelConfig Load(string filePath, string extension)
         {
-            string jsonContent = fileLoader.LoadText(filePath);
+            string jsonContent = fileLoader.LoadText(filePath, extension);
             PduChannelConfig config = JsonConvert.DeserializeObject<PduChannelConfig>(jsonContent);
             return config;
         }
