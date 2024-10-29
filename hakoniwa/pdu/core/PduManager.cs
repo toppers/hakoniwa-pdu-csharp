@@ -70,7 +70,7 @@ namespace hakoniwa.pdu.core
             // デコーダーで初期化されたPDUを返す
             return decoder.Decode(pduName, packageName, typeName, raw_data);
         }
-        public IPdu CreatePduByType(string memberName, string packageName, string typeName)
+        public IPdu CreatePduByType(string pduName, string packageName, string typeName)
         {
             // 定義をロードし、存在を確認
             var definition = pdu_definition_loader.LoadDefinition(packageName + "/" + typeName);
@@ -83,7 +83,7 @@ namespace hakoniwa.pdu.core
             var raw_data = new byte[HakoPduMetaDataType.PduMetaDataSize + definition.TotalSize];
 
             // デコーダーで初期化されたPDUを返す
-            return decoder.Decode(memberName, packageName, typeName, raw_data);
+            return decoder.Decode(pduName, packageName, typeName, raw_data);
         }
         public void WritePdu(string robotName, IPdu pdu)
         {
