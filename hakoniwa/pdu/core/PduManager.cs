@@ -14,12 +14,13 @@ namespace hakoniwa.pdu.core
         private PduDecoder decoder;
         private PduDataDefinitionLoader pdu_definition_loader;
         private PduChannelConfig pdu_channel_config;
-        public PduManager(IEnvironmentService srv)
+        public PduManager(IEnvironmentService srv, string config_path)
         {
             service = srv;
             pdu_definition_loader = new PduDataDefinitionLoader(service.GetFileLoader());
             PduChannelLoader pdu_channel_loader= new PduChannelLoader(service.GetFileLoader());
-            pdu_channel_config = pdu_channel_loader.Load("custom", ".json");
+            string fullPath = System.IO.Path.Combine(config_path, "custom");
+            pdu_channel_config = pdu_channel_loader.Load(fullPath, ".json");
         }
         public bool StartService()
         {
