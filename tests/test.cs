@@ -128,7 +128,8 @@ namespace hakoniwa.pdu.test
             images[127] = (byte)'b';
             image_pdu.SetData<Byte>("data", images);
             var test_images = pdu.GetData<IPdu>("image").GetDataArray<Byte>("data");
-            Assert.IsTrue(images[127] == 'b', "Write HakoCameraData: image is ok");
+            Assert.IsTrue(images[0] == 'a', "Write HakoCameraData: image[0] is a");
+            Assert.IsTrue(images[127] == 'b', "Write HakoCameraData: image[127] is b");
             mgr.WritePdu(robotName, pdu);
 
 
@@ -136,12 +137,57 @@ namespace hakoniwa.pdu.test
              * Read Test.
              */
             IPdu rpdu = mgr.ReadPdu(robotName, pduName);
-            Assert.IsTrue(rpdu != null, "Read Twist: pdu is created");
+            Assert.IsTrue(rpdu != null, "Read HakoCameraData: pdu is read");
             byte[] rimages = rpdu.GetData<IPdu>("image").GetDataArray<Byte>("data");
-            Assert.IsTrue(rimages[0] == 'a', "Read HakoCameraData: images[0] is OK");
-            Assert.IsTrue(rimages[127] == 'b', "Read HakoCameraData: images[127] is OK");
+            Assert.IsTrue(rimages.Length == 128, "Read HakoCameraData size = 128.");
+            Assert.IsTrue(rimages[0] == 'a', "Read HakoCameraData: images[0] is a");
+            Assert.IsTrue(rimages[127] == 'b', "Read HakoCameraData: images[127] is b");
 
 
+            mgr.StopService();
+        }
+        static void PointCloud2_Test()
+        {
+            string robotName = "DroneTransporter";
+            string pduName = "lidar_points";
+            IEnvironmentService service = EnvironmentServiceFactory.Create();
+            PduManager mgr = new PduManager(service, test_dir);
+            mgr.StartService();
+            Assert.IsTrue(mgr != null, "Create PointCloud2: pdu manager creation");
+
+            /*
+             * Create Test.
+             */
+            IPdu pdu = mgr.CreatePdu(robotName, pduName);
+            Assert.IsTrue(pdu != null, "Write PointCloud2: pdu is created");
+            IPdu[] r_pdu = pdu.GetDataArray<IPdu>("fields");
+            Assert.IsTrue(r_pdu.Length == 0, "Write PointCloud2: pdu's fields is empty");
+
+
+            /*
+             * Write Test.
+             */
+            IPdu[] pdu_fields = new IPdu[2];
+            for (int i = 0; i < pdu_fields.Length; i++)
+            {
+                pdu_fields[i] = mgr.CreatePduByType("fields", "sensor_msgs", "PointField");
+                pdu_fields[i].SetData<UInt32>("offset", (UInt32)(i + 100));
+            }
+            pdu.SetData<IPdu>("fields", pdu_fields);
+            var rets = pdu.GetDataArray<IPdu>("fields");
+            Assert.IsTrue(rets.Length == 2, "Write PointCloud2: pdu's fields array size is 2");
+            //Console.WriteLine($"off1: {pdu.GetDataArray<IPdu>("fields")[0].GetData<UInt32>("offset")}");
+            //Console.WriteLine($"off2: {pdu.GetDataArray<IPdu>("fields")[1].GetData<UInt32>("offset")}");
+            mgr.WritePdu(robotName, pdu);
+
+            /*
+             * Read Test.
+             */
+            IPdu wcheck_pdu = mgr.ReadPdu(robotName, pduName);
+            Assert.IsTrue(wcheck_pdu.GetDataArray<IPdu>("fields")[0].GetData<UInt32>("offset") == 100, "Write PointCloud2: pdu write[0] test OK");
+            Assert.IsTrue(wcheck_pdu.GetDataArray<IPdu>("fields")[1].GetData<UInt32>("offset") == 101, "Write PointCloud2: pdu write[1] test OK");
+            //Console.WriteLine($"off1: {wcheck_pdu.GetDataArray<IPdu>("fields")[0].GetData<UInt32>("offset")}");
+            //Console.WriteLine($"off2: {wcheck_pdu.GetDataArray<IPdu>("fields")[1].GetData<UInt32>("offset")}");
             mgr.StopService();
         }
         static int Main()
@@ -153,6 +199,12 @@ namespace hakoniwa.pdu.test
                 return 1;
             }
             HakoCameraData_Test();
+            if (Assert.IsTestFailed())
+            {
+                Console.WriteLine("Test Failed.");
+                return 1;
+            }
+            PointCloud2_Test();
             if (Assert.IsTestFailed())
             {
                 Console.WriteLine("Test Failed.");

@@ -87,6 +87,7 @@ namespace hakoniwa.pdu.core
         private void ConvertFromPrimtive(IPdu dst, PduFieldDefinition elm, int base_off, int elm_off, byte[] src_buffer)
         {
             var off = base_off + elm_off;
+            //Console.WriteLine($"DEC {elm.MemberName} off: {off}");
             switch (elm.DataTypeName)
             {
                 case "int8":
@@ -185,6 +186,7 @@ namespace hakoniwa.pdu.core
         private static void ConvertFromPrimtiveArray(IPdu dst, PduFieldDefinition elm, int base_off, int elm_off, int array_size, byte[] src_buffer)
         {
             int roff = base_off + elm_off;
+            //Console.WriteLine($"DEC array {elm.MemberName} roff: {roff}");
             for (int i = 0; i < array_size; i++)
             {
                 //SimpleLogger.Get().Log(Level.INFO, "field=" + elm.field_name);

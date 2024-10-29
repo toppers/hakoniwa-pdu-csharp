@@ -8,28 +8,21 @@ namespace hakoniwa.pdu.core
     public class DynamicAllocator
     {
         private List<byte> data;
-        private bool is_heap;
+        public bool IsHeap { get; set; }
 
         public DynamicAllocator(bool is_heap)
         {
-            this.is_heap = is_heap;
+            this.IsHeap = is_heap;
             data = new List<byte>();
         }
 
-        public void Add(byte[] bytes)
-        {
-            data.AddRange(bytes);
-        }
 
         public void Add(byte[] bytes, int expectedOffset, int count)
         {
-            if (is_heap == false)
+            int currentSize = data.Count;
+            if (currentSize < expectedOffset)
             {
-                int currentSize = data.Count;
-                if (currentSize < expectedOffset)
-                {
-                    data.AddRange(new byte[expectedOffset - currentSize]);
-                }
+                data.AddRange(new byte[expectedOffset - currentSize]);
             }
             data.AddRange(new ArraySegment<byte>(bytes, 0, count));
         }
@@ -69,6 +62,7 @@ namespace hakoniwa.pdu.core
 
             // 全体サイズを計算し、バッファを確保
             int totalSize = def.TotalSize + heap_allocator.Size + HakoPduMetaDataType.PduMetaDataSize;
+            //Console.WriteLine($"totalSize: {totalSize}, baseSize: {def.TotalSize}, heapSize: {heap_allocator.Size}, MetaSize: {HakoPduMetaDataType.PduMetaDataSize}");
             byte[] buffer = new byte[totalSize];
             meta.total_size = (uint)totalSize;
 
@@ -124,9 +118,12 @@ namespace hakoniwa.pdu.core
                     else if (elm.Type == PduFieldDefinition.FieldType.VariableArray)
                     {
                         int offset_from_heap = heap_allocator.Size;
+                        //Console.WriteLine($"ENC {fieldName}: heap_off={heap_allocator.Size}");
                         int array_size = ConvertFromStructArray(0, elm, heap_allocator, src);
+                        //Console.WriteLine($"ENC {fieldName}: array_size={array_size}");
                         var offset_from_heap_bytes = BitConverter.GetBytes(offset_from_heap);
                         var array_size_bytes = BitConverter.GetBytes(array_size);
+                        //Console.WriteLine($"ENC {fieldName}: heap_allocator.Size={heap_allocator.Size}");
                         allocator.Add(array_size_bytes, parent_off + elm.ByteMemberOffset, array_size_bytes.Length);
                         allocator.Add(offset_from_heap_bytes, parent_off + elm.ByteMemberOffset + array_size_bytes.Length, offset_from_heap_bytes.Length);
                     }
@@ -153,10 +150,21 @@ namespace hakoniwa.pdu.core
 
         private int ConvertFromPrimtiveArray(int parent_off, PduFieldDefinition elm, DynamicAllocator allocator, IPdu src)
         {
+            int elm_off = 0;
+            if (allocator.IsHeap)
+            {
+                elm_off = allocator.Size;
+                //Console.WriteLine($"heap elm_off={elm_off}");
+            }
+            else
+            {
+                elm_off = elm.ByteMemberOffset;
+                //Console.WriteLine($"base elm_off={elm_off}");
+            }
             int array_size = 0;
             int element_size = elm.ByteMemberDataTypeSize;
             byte[] tmp_bytes = null;
-
+            //Console.WriteLine($"Primitive Array: parent_off = {parent_off} elm_off = {elm_off}");
             switch (elm.DataTypeName)
             {
                 case "int8":
@@ -164,33 +172,33 @@ namespace hakoniwa.pdu.core
                     array_size = int8Array.Length;
                     tmp_bytes = new byte[array_size * element_size];
                     Buffer.BlockCopy(int8Array, 0, tmp_bytes, 0, array_size);
-                    allocator.Add(tmp_bytes, parent_off + elm.ByteMemberOffset, array_size * element_size);
+                    allocator.Add(tmp_bytes, parent_off + elm_off, array_size * element_size);
                     return array_size;
                 case "int16":
                     short[] int16Array = src.GetDataArray<Int16>(elm.MemberName);
                     array_size = int16Array.Length;
                     tmp_bytes = new byte[array_size * element_size];
                     Buffer.BlockCopy(int16Array, 0, tmp_bytes, 0, tmp_bytes.Length);
-                    allocator.Add(tmp_bytes, parent_off + elm.ByteMemberOffset, tmp_bytes.Length);
+                    allocator.Add(tmp_bytes, parent_off + elm_off, tmp_bytes.Length);
                     return array_size;
                 case "int32":
                     int[] int32Array = src.GetDataArray<Int32>(elm.MemberName);
                     array_size = int32Array.Length;
                     tmp_bytes = new byte[array_size * element_size];
                     Buffer.BlockCopy(int32Array, 0, tmp_bytes, 0, tmp_bytes.Length);
-                    allocator.Add(tmp_bytes, parent_off + elm.ByteMemberOffset, tmp_bytes.Length);
+                    allocator.Add(tmp_bytes, parent_off + elm_off, tmp_bytes.Length);
                     return array_size;
                 case "int64":
                     long[] int64Array = src.GetDataArray<Int64>(elm.MemberName);
                     array_size = int64Array.Length;
                     tmp_bytes = new byte[array_size * element_size];
                     Buffer.BlockCopy(int64Array, 0, tmp_bytes, 0, tmp_bytes.Length);
-                    allocator.Add(tmp_bytes, parent_off + elm.ByteMemberOffset, tmp_bytes.Length);
+                    allocator.Add(tmp_bytes, parent_off + elm_off, tmp_bytes.Length);
                     return array_size;
                 case "uint8":
                     byte[] uint8Array = src.GetDataArray<Byte>(elm.MemberName);
                     array_size = uint8Array.Length;
-                    allocator.Add(uint8Array, parent_off + elm.ByteMemberOffset, array_size * element_size);
+                    allocator.Add(uint8Array, parent_off + elm_off, array_size * element_size);
                     //Debug.Log("uint8: parent_off: " + parent_off + " elm.offset:" + elm.offset + " array_size:" + array_size);
                     return array_size;
                 case "uint16":
@@ -198,35 +206,35 @@ namespace hakoniwa.pdu.core
                     array_size = uint16Array.Length;
                     tmp_bytes = new byte[array_size * element_size];
                     Buffer.BlockCopy(uint16Array, 0, tmp_bytes, 0, tmp_bytes.Length);
-                    allocator.Add(tmp_bytes, parent_off + elm.ByteMemberOffset, tmp_bytes.Length);
+                    allocator.Add(tmp_bytes, parent_off + elm_off, tmp_bytes.Length);
                     return array_size;
                 case "uint32":
                     uint[] uint32Array = src.GetDataArray<UInt32>(elm.MemberName);
                     array_size = uint32Array.Length;
                     tmp_bytes = new byte[array_size * element_size];
                     Buffer.BlockCopy(uint32Array, 0, tmp_bytes, 0, tmp_bytes.Length);
-                    allocator.Add(tmp_bytes, parent_off + elm.ByteMemberOffset, tmp_bytes.Length);
+                    allocator.Add(tmp_bytes, parent_off + elm_off, tmp_bytes.Length);
                     return array_size;
                 case "uint64":
                     ulong[] uint64Array = src.GetDataArray<UInt64>(elm.MemberName);
                     array_size = uint64Array.Length;
                     tmp_bytes = new byte[array_size * element_size];
                     Buffer.BlockCopy(uint64Array, 0, tmp_bytes, 0, tmp_bytes.Length);
-                    allocator.Add(tmp_bytes, parent_off + elm.ByteMemberOffset, tmp_bytes.Length);
+                    allocator.Add(tmp_bytes, parent_off + elm_off, tmp_bytes.Length);
                     return array_size;
                 case "float32":
                     float[] float32Array = src.GetDataArray<float>(elm.MemberName);
                     array_size = float32Array.Length;
                     tmp_bytes = new byte[array_size * element_size];
                     Buffer.BlockCopy(float32Array, 0, tmp_bytes, 0, tmp_bytes.Length);
-                    allocator.Add(tmp_bytes, parent_off + elm.ByteMemberOffset, tmp_bytes.Length);
+                    allocator.Add(tmp_bytes, parent_off + elm_off, tmp_bytes.Length);
                     return array_size;
                 case "float64":
                     double[] float64Array = src.GetDataArray<double>(elm.MemberName);
                     array_size = float64Array.Length;
                     tmp_bytes = new byte[array_size * element_size];
                     Buffer.BlockCopy(float64Array, 0, tmp_bytes, 0, tmp_bytes.Length);
-                    allocator.Add(tmp_bytes, parent_off + elm.ByteMemberOffset, tmp_bytes.Length);
+                    allocator.Add(tmp_bytes, parent_off + elm_off, tmp_bytes.Length);
                     return array_size;
                 case "bool":
                     bool[] boolArray = src.GetDataArray<bool>(elm.MemberName);
@@ -238,7 +246,7 @@ namespace hakoniwa.pdu.core
                         boolBytes[0] = boolArray[i] ? (byte)1 : (byte)0;
                         Buffer.BlockCopy(boolBytes, 0, tmp_bytes, i * 4, 4);
                     }
-                    allocator.Add(tmp_bytes, parent_off + elm.ByteMemberOffset, tmp_bytes.Length);
+                    allocator.Add(tmp_bytes, parent_off + elm_off, tmp_bytes.Length);
                     return array_size;
                 case "string":
                     string[] stringArray = src.GetDataArray<string>(elm.MemberName);
@@ -248,7 +256,7 @@ namespace hakoniwa.pdu.core
                         byte[] stringBytes = Encoding.ASCII.GetBytes(stringArray[i]);
                         byte[] paddedStringBytes = new byte[elm.ByteMemberDataTypeSize];
                         Buffer.BlockCopy(stringBytes, 0, paddedStringBytes, 0, stringBytes.Length);
-                        allocator.Add(paddedStringBytes, parent_off + elm.ByteMemberOffset + i * element_size, paddedStringBytes.Length);
+                        allocator.Add(paddedStringBytes, parent_off + elm_off + i * element_size, paddedStringBytes.Length);
                     }
                     return array_size;
                 default:
@@ -308,6 +316,8 @@ namespace hakoniwa.pdu.core
                     throw new InvalidCastException("Error: Can not found ptype: " + elm.DataTypeName);
             }
             allocator.Add(tmp_bytes, parent_off + elm.ByteMemberOffset, tmp_bytes.Length);
+            //Console.WriteLine($"ENC Primitive: {elm.MemberName}, parent_off: {parent_off}, off: {parent_off + elm.ByteMemberOffset}, len: {tmp_bytes.Length}");
+            //Console.WriteLine($"ENC Primitive: {elm.MemberName}, CurrOff: {allocator.Size}");
         }
     }
 }
