@@ -23,7 +23,7 @@ namespace hakoniwa.pdu.core
                     }
                     foreach (var writer in robot.shm_pdu_writers)
                     {
-                        if (writer.name == pduName)
+                        if (writer.org_name == pduName)
                         {
                             return writer.type;
                         }

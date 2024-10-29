@@ -32,8 +32,15 @@ namespace hakoniwa.pdu.core
                     else if (elm.Type == PduFieldDefinition.FieldType.VariableArray)
                     {
                         int array_size = BitConverter.ToInt32(src_buffer, base_off + elm.ByteMemberOffset);
-                        int offset_from_heap = BitConverter.ToInt32(src_buffer, base_off + elm.ByteMemberOffset + 4);
-                        ConvertFromPrimtiveArray(dst, elm, (int)meta.heap_off, offset_from_heap, array_size, src_buffer);
+                        if (array_size == 0)
+                        {
+                            SetEmptyPrimitiveArray(dst, elm);
+                        }
+                        else
+                        {
+                            int offset_from_heap = BitConverter.ToInt32(src_buffer, base_off + elm.ByteMemberOffset + 4);
+                            ConvertFromPrimtiveArray(dst, elm, (int)meta.heap_off, offset_from_heap, array_size, src_buffer);
+                        }
                     }
                     else
                     {
@@ -121,6 +128,52 @@ namespace hakoniwa.pdu.core
                     break;
                 default:
                     throw new InvalidCastException("Error: Can not found ptype: " + elm.MemberName);
+            }
+        }
+        private static void SetEmptyPrimitiveArray(IPdu dst, PduFieldDefinition elm)
+        {
+            switch (elm.DataTypeName)
+            {
+                case "int8":
+                    dst.SetData<SByte>(elm.MemberName, new SByte[1]);
+                    break;
+                case "int16":
+                    dst.SetData<Int16>(elm.MemberName, new Int16[1]);
+                    break;
+                case "int32":
+                    dst.SetData<Int32>(elm.MemberName, new Int32[1]);
+                    break;
+                case "int64":
+                    dst.SetData<Int64>(elm.MemberName, new Int64[1]);
+                    break;
+                case "uint8":
+                    dst.SetData<Byte>(elm.MemberName, new Byte[1]);
+                    break;
+                case "uint16":
+                    dst.SetData<UInt16>(elm.MemberName, new UInt16[1]);
+                    break;
+                case "uint32":
+                    dst.SetData<UInt32>(elm.MemberName, new UInt32[1]);
+                    break;
+                case "uint64":
+                    dst.SetData<UInt64>(elm.MemberName, new UInt64[1]);
+                    break;
+                case "float32":
+                    dst.SetData<float>(elm.MemberName, new float[1]);
+                    break;
+                case "float64":
+                    dst.SetData<double>(elm.MemberName, new double[1]);
+                    break;
+                case "bool":
+                    dst.SetData<bool>(elm.MemberName, new bool[1]);
+                    break;
+                case "string":
+                    var strs = new string[1];
+                    strs[0] =  "";
+                    dst.SetData<string>(elm.MemberName, strs);
+                    break;
+                default:
+                    throw new InvalidCastException("Error: Can not found ptype: " + elm.DataTypeName);
             }
         }
         private static void ConvertFromPrimtiveArray(IPdu dst, PduFieldDefinition elm, int base_off, int elm_off, int array_size, byte[] src_buffer)

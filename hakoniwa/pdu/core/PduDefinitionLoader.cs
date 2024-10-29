@@ -10,11 +10,13 @@ namespace hakoniwa.pdu.core
     {
         private Dictionary<string, PduDataDefinition> definitions = new Dictionary<string, PduDataDefinition>();
         private IFileLoader file_loader;
+        private string config_path;
         private static readonly HashSet<string> PrimitiveTypes = new HashSet<string>
         { "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "bool", "string" };
 
-        public PduDataDefinitionLoader(IFileLoader ldr)
+        public PduDataDefinitionLoader(IFileLoader ldr, string _config_path)
         {
+            this.config_path = _config_path;
             file_loader = ldr ?? throw new ArgumentNullException(nameof(ldr));
         }
 
@@ -24,8 +26,10 @@ namespace hakoniwa.pdu.core
             {
                 return definitions[package_type_name];
             }
-
-            string textContent = file_loader.LoadText(package_type_name, ".offset");
+            string relative_path = "ros_types/offset/" + package_type_name;
+            string normalizedPackageTypeName = relative_path.Replace('/', Path.DirectorySeparatorChar);
+            string fullPath = Path.Combine(config_path, normalizedPackageTypeName);
+            string textContent = file_loader.LoadText(fullPath, ".offset");
             if (string.IsNullOrWhiteSpace(textContent))
             {
                 throw new FileNotFoundException($"Could not load definition for {package_type_name}");

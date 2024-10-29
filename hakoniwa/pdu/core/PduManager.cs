@@ -17,7 +17,7 @@ namespace hakoniwa.pdu.core
         public PduManager(IEnvironmentService srv, string config_path)
         {
             service = srv;
-            pdu_definition_loader = new PduDataDefinitionLoader(service.GetFileLoader());
+            pdu_definition_loader = new PduDataDefinitionLoader(service.GetFileLoader(), config_path);
             PduChannelLoader pdu_channel_loader= new PduChannelLoader(service.GetFileLoader());
             string fullPath = System.IO.Path.Combine(config_path, "custom");
             pdu_channel_config = pdu_channel_loader.Load(fullPath, ".json");
@@ -65,20 +65,21 @@ namespace hakoniwa.pdu.core
             }
 
             // 定義サイズに基づきバッファを初期化
-            var raw_data = new byte[definition.TotalSize];
+            var raw_data = new byte[HakoPduMetaDataType.PduMetaDataSize + definition.TotalSize];
 
             // デコーダーで初期化されたPDUを返す
             return decoder.Decode(pduName, packageName, typeName, raw_data);
         }
-        public void WritePdu(IPdu pdu)
+        public void WritePdu(string robotName, IPdu pdu)
         {
             if (!enabledService)
             {
-                return;
+                throw new ArgumentException($"PduManger Service is not enabled");
             }
 
             byte[] encodedData = encoder.Encode(pdu as Pdu);
-            buffers.SetBuffer(pdu.Name, encodedData);
+            string key = robotName + "_" + pdu.Name;
+            buffers.SetBuffer(key, encodedData);
         }
         public void FlushPdu(IPdu pdu)
         {
@@ -89,17 +90,15 @@ namespace hakoniwa.pdu.core
         {
             if (!enabledService)
             {
-                return null;
+                throw new ArgumentException($"PduManger Service is not enabled");
             }
 
             string key = robotName + "_" + pduName;
             byte[] raw_data = buffers.GetBuffer(key);
             if (raw_data == null)
             {
-                return null;
+                throw new ArgumentException($"PDU type not found for {robotName}/{pduName}");
             }
-
-
 
             string packageName;
             string typeName;
