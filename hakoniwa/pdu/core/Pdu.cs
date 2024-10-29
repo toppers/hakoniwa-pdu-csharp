@@ -36,6 +36,10 @@ namespace hakoniwa.pdu.core
             this.PackageName = packageName;
             this.pdu_definition = definition ?? throw new ArgumentNullException(nameof(definition));
         }
+        public string GetPackageTypeName()
+        {
+            return this.PackageName + "/" + this.TypeName;
+        }
         public PduDataDefinition GetPduDefinition()
         {
             return pdu_definition;

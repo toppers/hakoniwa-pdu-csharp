@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using hakoniwa.environment.interfaces;
+using hakoniwa.pdu.interfaces;
 
 namespace hakoniwa.pdu.core
 {

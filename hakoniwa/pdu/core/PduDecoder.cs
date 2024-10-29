@@ -18,7 +18,7 @@ namespace hakoniwa.pdu.core
             ConvertFromStruct(dst, meta, HakoPduMetaDataType.PduMetaDataSize, raw_data);
             return dst;
         }
-        private void ConvertFromStruct(Pdu dst, HakoPduMetaDataType meta, int base_off, byte[] src_buffer)
+        private void ConvertFromStruct(IPdu dst, HakoPduMetaDataType meta, int base_off, byte[] src_buffer)
         {
             foreach (var (fieldName, elm) in dst.GetPduDefinition().Get())
             {
@@ -63,7 +63,7 @@ namespace hakoniwa.pdu.core
                 }
             }
         }
-        private void ConvertFromStructArray(Pdu dst, HakoPduMetaDataType meta, PduFieldDefinition elm, int base_off, int elm_off, int array_size, byte[] src_buffer)
+        private void ConvertFromStructArray(IPdu dst, HakoPduMetaDataType meta, PduFieldDefinition elm, int base_off, int elm_off, int array_size, byte[] src_buffer)
         {
             PduDataDefinition def = loader.LoadDefinition(elm.DataTypeName);
             Pdu[] child_pdus = new Pdu[array_size];
@@ -74,7 +74,7 @@ namespace hakoniwa.pdu.core
             }
             dst.SetData(elm.MemberName, child_pdus);
         }
-        private void ConvertFromPrimtive(Pdu dst, PduFieldDefinition elm, int base_off, int elm_off, byte[] src_buffer)
+        private void ConvertFromPrimtive(IPdu dst, PduFieldDefinition elm, int base_off, int elm_off, byte[] src_buffer)
         {
             var off = base_off + elm_off;
             switch (elm.DataTypeName)
@@ -123,7 +123,7 @@ namespace hakoniwa.pdu.core
                     throw new InvalidCastException("Error: Can not found ptype: " + elm.MemberName);
             }
         }
-        private static void ConvertFromPrimtiveArray(Pdu dst, PduFieldDefinition elm, int base_off, int elm_off, int array_size, byte[] src_buffer)
+        private static void ConvertFromPrimtiveArray(IPdu dst, PduFieldDefinition elm, int base_off, int elm_off, int array_size, byte[] src_buffer)
         {
             int roff = base_off + elm_off;
             for (int i = 0; i < array_size; i++)

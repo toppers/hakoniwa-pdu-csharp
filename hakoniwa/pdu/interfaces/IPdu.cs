@@ -6,6 +6,6 @@
         string Name { get; }
         string TypeName { get; }
         string PackageName { get; }
-
+        PduDataDefinition GetPduDefinition();
     }
 }
