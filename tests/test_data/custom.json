@@ -193,6 +193,17 @@
           "pdu_size": 72,
           "write_cycle": 5,
           "method_type": "SHM"
+        },
+        {
+          "type": "ev3_msgs/Ev3PduSensor",
+          "org_name": "ev3_sensor",
+          "name": "DroneTransporter_ev3_sensor",
+          "class_name": "Hakoniwa.PluggableAsset.Communication.Pdu.Raw.RawPduWriter",
+          "conv_class_name": "Hakoniwa.PluggableAsset.Communication.Pdu.Raw.RawPduWriterConverter",
+          "channel_id": 17,
+          "pdu_size": 72,
+          "write_cycle": 5,
+          "method_type": "SHM"
         }
       ]
     }

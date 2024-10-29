@@ -190,6 +190,61 @@ namespace hakoniwa.pdu.test
             //Console.WriteLine($"off2: {wcheck_pdu.GetDataArray<IPdu>("fields")[1].GetData<UInt32>("offset")}");
             mgr.StopService();
         }
+        static void Ev3PduSensor_Test()
+        {
+            string robotName = "DroneTransporter";
+            string pduName = "ev3_sensor";
+            IEnvironmentService service = EnvironmentServiceFactory.Create();
+            PduManager mgr = new PduManager(service, test_dir);
+            mgr.StartService();
+            Assert.IsTrue(mgr != null, "Create Ev3PduSensor: pdu manager creation");
+
+            /*
+             * Create Test.
+             */
+            IPdu pdu = mgr.CreatePdu(robotName, pduName);
+            Assert.IsTrue(pdu != null, "Write Ev3PduSensor: pdu is created");
+            IPdu[] r_pdu = pdu.GetDataArray<IPdu>("color_sensors");
+            Assert.IsTrue(r_pdu.Length == 2, "Write Ev3PduSensor: pdu's color_sensors len = 2");
+            r_pdu = pdu.GetDataArray<IPdu>("touch_sensors");
+            Assert.IsTrue(r_pdu.Length == 2, "Write Ev3PduSensor: pdu's touch_sensors len = 2");
+            var fixed_array = pdu.GetDataArray<UInt32>("motor_angle");
+            Assert.IsTrue(fixed_array.Length == 3, "Write Ev3PduSensor: pdu's motor_angle len = 3");
+            //Console.WriteLine($"motor angle len: {fixed_array.Length}");
+
+            /*
+             * Write Test.
+             */
+            pdu.GetDataArray<IPdu>("color_sensors")[0].SetData<UInt32>("rgb_r", 99);
+            pdu.GetDataArray<IPdu>("color_sensors")[1].SetData<UInt32>("rgb_r", 101);
+            pdu.GetDataArray<IPdu>("touch_sensors")[0].SetData<UInt32>("value", 9);
+            pdu.GetDataArray<IPdu>("touch_sensors")[1].SetData<UInt32>("value", 8);
+            pdu.SetData<UInt32>("motor_angle", 0, 1);
+            pdu.SetData<UInt32>("motor_angle", 1, 2);
+            pdu.SetData<UInt32>("motor_angle", 2, 3);
+            Assert.IsTrue(pdu.GetDataArray<IPdu>("color_sensors")[0].GetData<UInt32>("rgb_r")== 99, "Read Ev3PduSensor: pdu's color_sensors 99");
+            Assert.IsTrue(pdu.GetDataArray<IPdu>("color_sensors")[1].GetData<UInt32>("rgb_r") == 101, "Read Ev3PduSensor: pdu's color_sensors 101");
+            Assert.IsTrue(pdu.GetDataArray<IPdu>("touch_sensors")[0].GetData<UInt32>("value") == 9, "Read Ev3PduSensor: pdu's touch_sensors 9");
+            Assert.IsTrue(pdu.GetDataArray<IPdu>("touch_sensors")[1].GetData<UInt32>("value") == 8, "Read Ev3PduSensor: pdu's touch_sensors 8");
+            Assert.IsTrue(pdu.GetDataArray<UInt32>("motor_angle")[0] == 1, "Read Ev3PduSensor: pdu's motor_angle 0");
+            Assert.IsTrue(pdu.GetDataArray<UInt32>("motor_angle")[1] == 2, "Read Ev3PduSensor: pdu's motor_angle 1");
+            Assert.IsTrue(pdu.GetDataArray<UInt32>("motor_angle")[2] == 3, "Read Ev3PduSensor: pdu's motor_angle 2");
+
+            mgr.WritePdu(robotName, pdu);
+            /*
+             * Read Test.
+             */
+            IPdu wcheck_pdu = mgr.ReadPdu(robotName, pduName);
+            Assert.IsTrue(wcheck_pdu.GetDataArray<IPdu>("color_sensors")[0].GetData<UInt32>("rgb_r") == 99, "Read Ev3PduSensor: pdu's color_sensors 99");
+            Assert.IsTrue(wcheck_pdu.GetDataArray<IPdu>("color_sensors")[1].GetData<UInt32>("rgb_r") == 101, "Read Ev3PduSensor: pdu's color_sensors 101");
+            Assert.IsTrue(wcheck_pdu.GetDataArray<IPdu>("touch_sensors")[0].GetData<UInt32>("value") == 9, "Read Ev3PduSensor: pdu's touch_sensors 9");
+            Assert.IsTrue(wcheck_pdu.GetDataArray<IPdu>("touch_sensors")[1].GetData<UInt32>("value") == 8, "Read Ev3PduSensor: pdu's touch_sensors 8");
+            Assert.IsTrue(wcheck_pdu.GetDataArray<UInt32>("motor_angle")[0] == 1, "Read Ev3PduSensor: pdu's motor_angle 0");
+            Assert.IsTrue(wcheck_pdu.GetDataArray<UInt32>("motor_angle")[1] == 2, "Read Ev3PduSensor: pdu's motor_angle 1");
+            Assert.IsTrue(wcheck_pdu.GetDataArray<UInt32>("motor_angle")[2] == 3, "Read Ev3PduSensor: pdu's motor_angle 2");
+
+        }
+
         static int Main()
         {
             Test_Twist();
@@ -205,6 +260,12 @@ namespace hakoniwa.pdu.test
                 return 1;
             }
             PointCloud2_Test();
+            if (Assert.IsTestFailed())
+            {
+                Console.WriteLine("Test Failed.");
+                return 1;
+            }
+            Ev3PduSensor_Test();
             if (Assert.IsTestFailed())
             {
                 Console.WriteLine("Test Failed.");

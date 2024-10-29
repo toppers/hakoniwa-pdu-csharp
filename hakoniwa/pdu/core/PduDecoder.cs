@@ -28,7 +28,7 @@ namespace hakoniwa.pdu.core
                     if (elm.Type == PduFieldDefinition.FieldType.FixedArray)
                     {
                         SetEmptyPrimitiveArray(dst, elm, elm.ArrayInfo.ArrayLen);
-                        ConvertFromPrimtiveArray(dst, elm, base_off, elm.ByteMemberOffset, elm.ByteMemberDataTypeSize, src_buffer);
+                        ConvertFromPrimtiveArray(dst, elm, base_off, elm.ByteMemberOffset, elm.ArrayInfo.ArrayLen, src_buffer);
                     }
                     else if (elm.Type == PduFieldDefinition.FieldType.VariableArray)
                     {
@@ -55,7 +55,7 @@ namespace hakoniwa.pdu.core
                     //struct
                     if (elm.Type == PduFieldDefinition.FieldType.FixedArray)
                     {
-                        ConvertFromStructArray(dst, meta, elm, base_off, elm.ByteMemberOffset, elm.ByteMemberDataTypeSize, src_buffer);
+                        ConvertFromStructArray(dst, meta, elm, base_off, elm.ByteMemberOffset, elm.ArrayInfo.ArrayLen, src_buffer);
                     }
                     else if (elm.Type == PduFieldDefinition.FieldType.VariableArray)
                     {
@@ -79,6 +79,7 @@ namespace hakoniwa.pdu.core
             Pdu[] child_pdus = new Pdu[array_size];
             for (int i = 0; i < array_size; i++)
             {
+                //Console.WriteLine($"DEC struct array: {i} : off: {base_off + elm_off} size: {elm.ByteMemberDataTypeSize}");
                 child_pdus[i] = new Pdu(elm.MemberName, elm.GetPackageName(), elm.GetTypeName(), def);
                 ConvertFromStruct(child_pdus[i], meta, (base_off + elm_off) + (i * elm.ByteMemberDataTypeSize), src_buffer);
             }
@@ -186,7 +187,7 @@ namespace hakoniwa.pdu.core
         private static void ConvertFromPrimtiveArray(IPdu dst, PduFieldDefinition elm, int base_off, int elm_off, int array_size, byte[] src_buffer)
         {
             int roff = base_off + elm_off;
-            //Console.WriteLine($"DEC array {elm.MemberName} roff: {roff}");
+            //Console.WriteLine($"DEC array {elm.MemberName} roff: {roff} array_size: {array_size}");
             for (int i = 0; i < array_size; i++)
             {
                 //SimpleLogger.Get().Log(Level.INFO, "field=" + elm.field_name);
