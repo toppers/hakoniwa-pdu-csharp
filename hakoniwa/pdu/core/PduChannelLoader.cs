@@ -33,6 +33,32 @@ namespace hakoniwa.pdu.core
             // 一致する設定がない場合はnullを返す
             return null;
         }
+        public string GetPduName(string robotName, int channelId)
+        {
+            foreach (var robot in robots)
+            {
+                if (robot.name == robotName)
+                {
+                    // shm_pdu_readersとshm_pdu_writersを検索
+                    foreach (var reader in robot.shm_pdu_readers)
+                    {
+                        if (reader.channel_id == channelId)
+                        {
+                            return reader.org_name;
+                        }
+                    }
+                    foreach (var writer in robot.shm_pdu_writers)
+                    {
+                        if (writer.channel_id == channelId)
+                        {
+                            return writer.org_name;
+                        }
+                    }
+                }
+            }
+            // 一致する設定がない場合はnullを返す
+            return null;
+        }
     }
 
     public class RobotConfig

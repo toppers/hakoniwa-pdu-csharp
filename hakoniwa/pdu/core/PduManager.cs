@@ -28,7 +28,7 @@ namespace hakoniwa.pdu.core
             {
                 return false;
             }
-            buffers = new PduBuffer();
+            buffers = new PduBuffer(pdu_channel_config);
             decoder = new PduDecoder(pdu_definition_loader);
             encoder = new PduEncoder(pdu_definition_loader);
             //TODO start service

@@ -1,13 +1,29 @@
 ﻿using System;
 using System.Text;
+using hakoniwa.environment.interfaces;
 
 namespace hakoniwa.environment.impl
 {
-    public class DataPacket
+    public class DataPacket: IDataPacket
     {
         public string RobotName { get; set; }
         public uint ChannelId { get; set; }
         public byte[] BodyData { get; set; }
+        public int GetChannelId()
+        {
+            return ChannelId;
+        }
+
+        public byte[] GetPduData()
+        {
+            return BodyData;
+        }
+
+        public string GetRobotName()
+        {
+            return RobotName;
+        }
+
         /// <summary>
         /// データパケットの構造
         /// - 先頭4バイト: 後続するデータの全体長 (int32)
@@ -91,6 +107,7 @@ namespace hakoniwa.environment.impl
 
             return data;
         }
+
     }
 }
 

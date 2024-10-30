@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using hakoniwa.environment.interfaces;
 
 namespace hakoniwa.pdu.core
 {
-    public class PduBuffer
+    public class PduBuffer: ICommunicationBuffer
     {
         private readonly Dictionary<string, byte[]> pduBuffer;
         private readonly object lockObj = new object();
+        private PduChannelConfig channel_config;
 
-        public PduBuffer()
+        public PduBuffer(PduChannelConfig pdu_channel_config)
         {
             pduBuffer = new Dictionary<string, byte[]>();
+            channel_config = pdu_channel_config;
         }
 
         public void SetBuffer(string key, byte[] data)
@@ -47,6 +50,16 @@ namespace hakoniwa.pdu.core
             lock (lockObj)
             {
                 pduBuffer.Clear();
+            }
+        }
+
+        public void PutPacket(IDataPacket packet)
+        {
+            string pduName = this.channel_config.GetPduName(packet.GetRobotName(), packet.GetChannelId());
+            if (pduName != null)
+            {
+                string key = packet.GetRobotName() + "_" + pduName;
+                this.SetBuffer(key, packet.GetPduData());
             }
         }
     }
