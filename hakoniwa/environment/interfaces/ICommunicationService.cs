@@ -7,9 +7,8 @@ namespace hakoniwa.environment.interfaces
     }
     public interface ICommunicationService
     {
-        void StartService();
+        void StartService(ICommunicationBuffer comm_buffer);
         void StopService();
-        void SendData(byte[] data);
-        byte[] ReceiveData();
+        void SendData(IDataPacket packet);
     }
 }

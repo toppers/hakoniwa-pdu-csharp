@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using hakoniwa.environment.impl;
 
 namespace hakoniwa.environment.interfaces
 {
@@ -14,6 +15,7 @@ namespace hakoniwa.environment.interfaces
         private UdpClient udpClient;
         private CancellationTokenSource cancellationTokenSource;
         private Task receiveTask;
+        private ICommunicationBuffer buffer;
 
         public UDPCommunicationService(int localPort, string remoteAddress, int remotePort)
         {
@@ -21,9 +23,9 @@ namespace hakoniwa.environment.interfaces
             this.remoteAddress = remoteAddress;
             this.remotePort = remotePort;
         }
-
-        public void StartService()
+        public void StartService(ICommunicationBuffer comm_buffer)
         {
+            buffer = comm_buffer;
             udpClient = new UdpClient(localPort);
             cancellationTokenSource = new CancellationTokenSource();
             receiveTask = Task.Run(() => ReceiveDataLoop(cancellationTokenSource.Token));
@@ -48,15 +50,11 @@ namespace hakoniwa.environment.interfaces
             }
         }
 
-        public void SendData(byte[] data)
+        public void SendData(IDataPacket packet)
         {
             var endPoint = new IPEndPoint(IPAddress.Parse(remoteAddress), remotePort);
+            var data = packet.Encode();
             udpClient?.Send(data, data.Length, endPoint);
-        }
-
-        public byte[] ReceiveData()
-        {
-            return null; // 非同期受信で利用されるので、ここでは直接の返却はしない
         }
 
         private async Task ReceiveDataLoop(CancellationToken ct)
@@ -67,9 +65,12 @@ namespace hakoniwa.environment.interfaces
                 {
                     var result = await udpClient.ReceiveAsync();
                     var receivedData = result.Buffer;
-
                     // 受信データの処理
                     Console.WriteLine($"Received Data: {BitConverter.ToString(receivedData)}");
+
+                    IDataPacket packet = DataPacket.Decode(receivedData);
+                    buffer.PutPacket(packet);
+
                 }
                 catch (SocketException e)
                 {
@@ -78,5 +79,6 @@ namespace hakoniwa.environment.interfaces
                 await Task.Delay(10); // 一定の間隔で受信処理を繰り返す
             }
         }
+
     }
 }

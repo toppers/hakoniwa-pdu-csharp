@@ -6,5 +6,6 @@ namespace hakoniwa.environment.interfaces
         public string GetRobotName();
         public int GetChannelId();
         public byte[] GetPduData();
+        public byte[] Encode();
     }
 }
