@@ -63,7 +63,7 @@ namespace hakoniwa.pdu.test
         {
             string robotName = "DroneTransporter";
             string pduName = "drone_pos";
-            IEnvironmentService service = EnvironmentServiceFactory.Create();
+            IEnvironmentService service = EnvironmentServiceFactory.Create("dummy");
             PduManager mgr = new PduManager(service, test_dir);
             mgr.StartService();
             Assert.IsTrue(mgr != null, "Create Twist: pdu manager creation");
@@ -104,7 +104,7 @@ namespace hakoniwa.pdu.test
         {
             string robotName = "DroneTransporter";
             string pduName = "hako_camera_data";
-            IEnvironmentService service = EnvironmentServiceFactory.Create();
+            IEnvironmentService service = EnvironmentServiceFactory.Create("dummy");
             PduManager mgr = new PduManager(service, test_dir);
             mgr.StartService();
             Assert.IsTrue(mgr != null, "Create HakoCameraData: pdu manager creation");
@@ -150,7 +150,7 @@ namespace hakoniwa.pdu.test
         {
             string robotName = "DroneTransporter";
             string pduName = "lidar_points";
-            IEnvironmentService service = EnvironmentServiceFactory.Create();
+            IEnvironmentService service = EnvironmentServiceFactory.Create("dummy");
             PduManager mgr = new PduManager(service, test_dir);
             mgr.StartService();
             Assert.IsTrue(mgr != null, "Create PointCloud2: pdu manager creation");
@@ -194,7 +194,7 @@ namespace hakoniwa.pdu.test
         {
             string robotName = "DroneTransporter";
             string pduName = "ev3_sensor";
-            IEnvironmentService service = EnvironmentServiceFactory.Create();
+            IEnvironmentService service = EnvironmentServiceFactory.Create("dummy");
             PduManager mgr = new PduManager(service, test_dir);
             mgr.StartService();
             Assert.IsTrue(mgr != null, "Create Ev3PduSensor: pdu manager creation");

@@ -16,6 +16,7 @@ namespace hakoniwa.environment.interfaces
         private CancellationTokenSource cancellationTokenSource;
         private Task receiveTask;
         private ICommunicationBuffer buffer;
+        private bool isServiceEnabled = false;
 
         public UDPCommunicationService(int localPort, string remoteAddress, int remotePort)
         {
@@ -23,16 +24,27 @@ namespace hakoniwa.environment.interfaces
             this.remoteAddress = remoteAddress;
             this.remotePort = remotePort;
         }
-        public void StartService(ICommunicationBuffer comm_buffer)
+        public bool StartService(ICommunicationBuffer comm_buffer)
         {
+            if (isServiceEnabled)
+            {
+                return false;
+            }
             buffer = comm_buffer;
             udpClient = new UdpClient(localPort);
             cancellationTokenSource = new CancellationTokenSource();
             receiveTask = Task.Run(() => ReceiveDataLoop(cancellationTokenSource.Token));
+            isServiceEnabled = true;
+            return true;
         }
 
-        public void StopService()
+        public bool StopService()
         {
+            if (!isServiceEnabled)
+            {
+                return false;
+            }
+
             cancellationTokenSource?.Cancel();
             try
             {
@@ -47,14 +59,27 @@ namespace hakoniwa.environment.interfaces
                 udpClient?.Close();
                 udpClient?.Dispose();
                 cancellationTokenSource?.Dispose();
+                isServiceEnabled = false;
             }
+            return true;
         }
 
-        public void SendData(IDataPacket packet)
+        public bool SendData(string robotName, int channelId, byte[] pdu_data)
         {
+            if (!isServiceEnabled)
+            {
+                return false;
+            }
+            IDataPacket packet = new DataPacket()
+            {
+                RobotName = robotName,
+                ChannelId = channelId,
+                BodyData = pdu_data
+            };
             var endPoint = new IPEndPoint(IPAddress.Parse(remoteAddress), remotePort);
             var data = packet.Encode();
             udpClient?.Send(data, data.Length, endPoint);
+            return true;
         }
 
         private async Task ReceiveDataLoop(CancellationToken ct)
@@ -80,5 +105,9 @@ namespace hakoniwa.environment.interfaces
             }
         }
 
+        public bool IsServiceEnabled()
+        {
+            return isServiceEnabled;
+        }
     }
 }

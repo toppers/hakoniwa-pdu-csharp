@@ -8,7 +8,6 @@ namespace hakoniwa.pdu.core
     public class PduManager
     {
         private IEnvironmentService service;
-        private bool enabledService;
         private PduBuffer buffers;
         private PduEncoder encoder;
         private PduDecoder decoder;
@@ -24,31 +23,32 @@ namespace hakoniwa.pdu.core
         }
         public bool StartService()
         {
-            if (enabledService)
+            if (service.GetCommunication().IsServiceEnabled())
             {
                 return false;
             }
             buffers = new PduBuffer(pdu_channel_config);
             decoder = new PduDecoder(pdu_definition_loader);
             encoder = new PduEncoder(pdu_definition_loader);
-            //TODO start service
-            enabledService = true;
+
+            service.GetCommunication().StartService(buffers);
             return false;
         }
         public bool StopService()
         {
-            if (enabledService)
+            if (!service.GetCommunication().IsServiceEnabled())
             {
-                //TODO stop service
+                return false;
             }
+
+            service.GetCommunication().StopService();
             buffers = null;
-            enabledService = false;
             return true;
         }
 
         public IPdu CreatePdu(string robotName, string pduName)
         {
-            if (!enabledService)
+            if (!service.GetCommunication().IsServiceEnabled())
             {
                 return null;
             }
@@ -72,6 +72,10 @@ namespace hakoniwa.pdu.core
         }
         public IPdu CreatePduByType(string pduName, string packageName, string typeName)
         {
+            if (!service.GetCommunication().IsServiceEnabled())
+            {
+                throw new ArgumentException($"PduManger Service is not enabled");
+            }
             // 定義をロードし、存在を確認
             var definition = pdu_definition_loader.LoadDefinition(packageName + "/" + typeName);
             if (definition == null)
@@ -85,9 +89,9 @@ namespace hakoniwa.pdu.core
             // デコーダーで初期化されたPDUを返す
             return decoder.Decode(pduName, packageName, typeName, raw_data);
         }
-        public void WritePdu(string robotName, IPdu pdu)
+        public string WritePdu(string robotName, IPdu pdu)
         {
-            if (!enabledService)
+            if (!service.GetCommunication().IsServiceEnabled())
             {
                 throw new ArgumentException($"PduManger Service is not enabled");
             }
@@ -96,15 +100,33 @@ namespace hakoniwa.pdu.core
             //Console.WriteLine($"encodedData Len: {encodedData.Length}");
             string key = robotName + "_" + pdu.Name;
             buffers.SetBuffer(key, encodedData);
+            return key;
         }
-        public void FlushPdu(IPdu pdu)
+        public bool FlushPdu(string key)
         {
-            //TODO
+            if (!service.GetCommunication().IsServiceEnabled())
+            {
+                throw new ArgumentException($"PduManger Service is not enabled");
+            }
+            byte[] pdu_raw_data = buffers.GetBuffer(key);
+            if (pdu_raw_data == null)
+            {
+                return false;
+            }
+            string robotName = key.Split("_")[0];
+            string pduName = key.Split("_")[1];
+            int channel_id = pdu_channel_config.GetChannelId(robotName, pduName);
+            if (channel_id < 0)
+            {
+                throw new ArgumentException($"PDU channel ID not found for {key}");
+            }
+            service.GetCommunication().SendData(robotName, channel_id, pdu_raw_data);
+            return true;
         }
 
         public IPdu ReadPdu(string robotName, string pduName)
         {
-            if (!enabledService)
+            if (!service.GetCommunication().IsServiceEnabled())
             {
                 throw new ArgumentException($"PduManger Service is not enabled");
             }
