@@ -23,13 +23,15 @@ namespace hakoniwa.environment.test
             var receiverBuffer = new CommunicationBufferMock();
             var receiverService = new UDPCommunicationService(receiverPort, remoteAddress, senderPort);
             Console.WriteLine("INFO: Start Receiver service");
-            receiverService.StartService(receiverBuffer);
+            var ret = await receiverService.StartService(receiverBuffer);
+            Assert.True(ret, "StartService is Failed");
 
             // 送信サービスのセットアップ
             var senderBuffer = new CommunicationBufferMock();
             var senderService = new UDPCommunicationService(senderPort, remoteAddress, receiverPort);
             Console.WriteLine("INFO: Start Sender service");
-            senderService.StartService(senderBuffer);
+            ret = await senderService.StartService(senderBuffer);
+            Assert.True(ret, "StartService is Failed");
 
             // 送信するデータの準備
             string robotName = "DroneTransporter";

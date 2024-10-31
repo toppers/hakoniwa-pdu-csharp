@@ -29,14 +29,14 @@ namespace hakoniwa.environment.impl.local
         }
 
 
-        public bool StartService(ICommunicationBuffer comm_buffer)
+        public Task<bool> StartService(ICommunicationBuffer comm_buffer)
         {
             if (isServiceEnabled)
             {
-                return false;
+                return Task.FromResult(false); ;
             }
             isServiceEnabled = true;
-            return true;
+            return Task.FromResult(true); ;
         }
 
         public bool StopService()

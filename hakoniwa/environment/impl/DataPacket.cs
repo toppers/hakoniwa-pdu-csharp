@@ -43,28 +43,30 @@ namespace hakoniwa.environment.impl
                 throw new ArgumentException("データが短すぎます。");
 
             int currentIndex = 0;
-            int totalLength = BitConverter.ToInt32(data, currentIndex);
-            currentIndex += 4;
 
+            // ヘッダーの長さを取得
             int headerLength = BitConverter.ToInt32(data, currentIndex);
             currentIndex += 4;
 
-            if (data.Length < 8 + headerLength)
+            if (data.Length < 4 + headerLength)
                 throw new ArgumentException("指定されたヘッダー長が不正です。");
 
+            // ロボット名の長さを取得
             int robotNameLength = BitConverter.ToInt32(data, currentIndex);
             currentIndex += 4;
 
+            // ロボット名を取得
             string robotName = Encoding.UTF8.GetString(data, currentIndex, robotNameLength);
             currentIndex += robotNameLength;
 
+            // チャネルIDを取得
             int channelId = BitConverter.ToInt32(data, currentIndex);
             currentIndex += 4;
 
-            int bodyStartIndex = currentIndex;
-            int bodyLength = totalLength - bodyStartIndex;
+            // ボディデータの開始位置と長さを計算
+            int bodyLength = data.Length - currentIndex;
             byte[] bodyData = new byte[bodyLength];
-            Array.Copy(data, bodyStartIndex, bodyData, 0, bodyLength);
+            Array.Copy(data, currentIndex, bodyData, 0, bodyLength);
 
             return new DataPacket
             {
@@ -74,6 +76,7 @@ namespace hakoniwa.environment.impl
             };
         }
 
+
         /// <summary>
         /// DataPacket オブジェクトからバイト配列にエンコードします。
         /// </summary>
@@ -82,28 +85,37 @@ namespace hakoniwa.environment.impl
             byte[] robotNameBytes = Encoding.UTF8.GetBytes(GetRobotName());
             int robotNameLength = robotNameBytes.Length;
 
-            int headerLength = 4 + robotNameLength + 4;
-            int totalLength = 8 + headerLength + (GetPduData()?.Length ?? 0);
+            int headerLength = 
+                4                                   // robot name length
+                + robotNameLength                   // robot name
+                + 4                                 // channel_id
+                + (GetPduData()?.Length ?? 0);      //body length
+            int totalLength = 4 + headerLength;
 
             byte[] data = new byte[totalLength];
             int currentIndex = 0;
 
-            BitConverter.GetBytes(totalLength).CopyTo(data, currentIndex);
-            currentIndex += 4;
-
+            //header length
             BitConverter.GetBytes(headerLength).CopyTo(data, currentIndex);
             currentIndex += 4;
+            //header
+            {
+                // robot name length
+                BitConverter.GetBytes(robotNameLength).CopyTo(data, currentIndex);
+                currentIndex += 4;
 
-            BitConverter.GetBytes(robotNameLength).CopyTo(data, currentIndex);
-            currentIndex += 4;
+                // robot name
+                robotNameBytes.CopyTo(data, currentIndex);
+                currentIndex += robotNameLength;
 
-            robotNameBytes.CopyTo(data, currentIndex);
-            currentIndex += robotNameLength;
-
-            BitConverter.GetBytes(GetChannelId()).CopyTo(data, currentIndex);
-            currentIndex += 4;
-
-            GetPduData()?.CopyTo(data, currentIndex);
+                // channel id
+                BitConverter.GetBytes(GetChannelId()).CopyTo(data, currentIndex);
+                currentIndex += 4;
+            }
+            // body
+            {
+                GetPduData()?.CopyTo(data, currentIndex);
+            }
 
             return data;
         }

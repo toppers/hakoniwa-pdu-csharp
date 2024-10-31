@@ -21,8 +21,8 @@ namespace hakoniwa.environment.impl.local
         {
             this.serverUri = serverUri;
         }
-
-        public bool StartService(ICommunicationBuffer comm_buffer)
+                
+        public async Task<bool> StartService(ICommunicationBuffer comm_buffer)
         {
             if (isServiceEnabled)
             {
@@ -33,37 +33,46 @@ namespace hakoniwa.environment.impl.local
             webSocket = new ClientWebSocket();
             cancellationTokenSource = new CancellationTokenSource();
 
-            // HTTP/2に設定
-            webSocket.Options.HttpVersion = HttpVersion.Version20;
-            webSocket.Options.HttpVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+            // HTTP/2に設定するためにHttpMessageInvokerを利用
+            var handler = new SocketsHttpHandler();
+            var invoker = new HttpMessageInvoker(handler);
 
-            receiveTask = Task.Run(() => ConnectAndReceiveData(cancellationTokenSource.Token));
-            isServiceEnabled = true;
-            return true;
-        }
+            // HTTP/2.0に設定
+            //webSocket.Options.HttpVersion = HttpVersion.Version20;
+            //webSocket.Options.HttpVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+            // HTTP/1.1に設定
+            webSocket.Options.HttpVersion = HttpVersion.Version11;
+            webSocket.Options.HttpVersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
 
-        private async Task ConnectAndReceiveData(CancellationToken ct)
-        {
             try
             {
-                await webSocket.ConnectAsync(new Uri(serverUri), ct);
+                await webSocket.ConnectAsync(new Uri(serverUri), invoker, cancellationTokenSource.Token);
                 Console.WriteLine("WebSocket connection established (HTTP/2).");
             }
             catch (WebSocketException ex)
             {
                 Console.WriteLine($"WebSocket connection error: {ex.Message}");
                 isServiceEnabled = false;
-                return;
+                return false;
             }
+            // 非同期で受信タスクを開始
+            receiveTask = Task.Run(() => ReceiveData(cancellationTokenSource.Token));
+            isServiceEnabled = true;
+            return true;
+        }
 
+
+        private async Task ReceiveData(CancellationToken ct)
+        {
             var headerBuffer = new byte[4];
-
+            Console.WriteLine("Start ReceiveData...");
             while (!ct.IsCancellationRequested && webSocket.State == WebSocketState.Open)
             {
                 WebSocketReceiveResult headerResult;
                 try
                 {
                     headerResult = await webSocket.ReceiveAsync(new ArraySegment<byte>(headerBuffer), ct);
+                    //Console.WriteLine($"headerResult: {headerResult.Count}");
                 }
                 catch (OperationCanceledException)
                 {
@@ -94,6 +103,7 @@ namespace hakoniwa.environment.impl.local
                         var segment = new ArraySegment<byte>(dataBuffer, 4 + bytesRead, totalLength - bytesRead);
                         WebSocketReceiveResult result = await webSocket.ReceiveAsync(segment, ct);
                         bytesRead += result.Count;
+                        //Console.WriteLine($"bytesRead: {bytesRead} totalLength: {totalLength}");
 
                         if (result.MessageType == WebSocketMessageType.Close)
                         {
@@ -107,12 +117,12 @@ namespace hakoniwa.environment.impl.local
                         break;
                     }
                 }
-
+                
                 if (bytesRead == totalLength)
                 {
                     IDataPacket packet = DataPacket.Decode(dataBuffer);
                     buffer.PutPacket(packet);
-                    Console.WriteLine("Data received and processed.");
+                    //Console.WriteLine("Data received and processed.");
                 }
             }
         }
@@ -164,7 +174,6 @@ namespace hakoniwa.environment.impl.local
 
             try
             {
-                Console.WriteLine("Wait stop...");
                 receiveTask?.Wait();
             }
             catch (AggregateException e)
@@ -173,7 +182,6 @@ namespace hakoniwa.environment.impl.local
             }
             finally
             {
-                Console.WriteLine("stop done");
                 webSocket?.Dispose();
                 cancellationTokenSource?.Dispose();
                 isServiceEnabled = false;

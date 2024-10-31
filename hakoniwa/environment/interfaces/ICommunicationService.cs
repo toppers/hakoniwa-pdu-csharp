@@ -9,7 +9,7 @@ namespace hakoniwa.environment.interfaces
     }
     public interface ICommunicationService
     {
-        bool StartService(ICommunicationBuffer comm_buffer);
+        Task<bool> StartService(ICommunicationBuffer comm_buffer);
         bool StopService();
         bool IsServiceEnabled();
         Task<bool> SendData(string robotName, int channelId, byte[] pdu_data);

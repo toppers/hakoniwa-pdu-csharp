@@ -24,18 +24,18 @@ namespace hakoniwa.environment.impl.local
             this.remoteAddress = remoteAddress;
             this.remotePort = remotePort;
         }
-        public bool StartService(ICommunicationBuffer comm_buffer)
+        public Task<bool> StartService(ICommunicationBuffer comm_buffer)
         {
             if (isServiceEnabled)
             {
-                return false;
+                return Task.FromResult(false); ;
             }
             buffer = comm_buffer;
             udpClient = new UdpClient(localPort);
             cancellationTokenSource = new CancellationTokenSource();
             receiveTask = Task.Run(() => ReceiveDataLoop(cancellationTokenSource.Token));
             isServiceEnabled = true;
-            return true;
+            return Task.FromResult(true); ;
         }
 
         public bool StopService()
