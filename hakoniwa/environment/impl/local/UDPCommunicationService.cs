@@ -46,6 +46,8 @@ namespace hakoniwa.environment.interfaces
             }
 
             cancellationTokenSource?.Cancel();
+            // ソケットを閉じてReceiveAsyncを強制終了させる
+            udpClient?.Client.Close();            
             try
             {
                 receiveTask?.Wait();
@@ -56,7 +58,6 @@ namespace hakoniwa.environment.interfaces
             }
             finally
             {
-                udpClient?.Close();
                 udpClient?.Dispose();
                 cancellationTokenSource?.Dispose();
                 isServiceEnabled = false;
@@ -91,7 +92,7 @@ namespace hakoniwa.environment.interfaces
                     var result = await udpClient.ReceiveAsync();
                     var receivedData = result.Buffer;
                     // 受信データの処理
-                    Console.WriteLine($"Received Data: {BitConverter.ToString(receivedData)}");
+                    //Console.WriteLine($"Received Data: {BitConverter.ToString(receivedData)}");
 
                     IDataPacket packet = DataPacket.Decode(receivedData);
                     buffer.PutPacket(packet);
@@ -101,7 +102,6 @@ namespace hakoniwa.environment.interfaces
                 {
                     Console.WriteLine($"Socket Exception: {e.Message}");
                 }
-                await Task.Delay(10); // 一定の間隔で受信処理を繰り返す
             }
         }
 
