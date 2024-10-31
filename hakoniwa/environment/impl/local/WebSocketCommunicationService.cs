@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Net;
+using System.Net.Http;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using hakoniwa.environment.impl;
 using hakoniwa.environment.interfaces;
 
 namespace hakoniwa.environment.impl.local
@@ -32,6 +33,10 @@ namespace hakoniwa.environment.impl.local
             webSocket = new ClientWebSocket();
             cancellationTokenSource = new CancellationTokenSource();
 
+            // HTTP/2に設定
+            webSocket.Options.HttpVersion = HttpVersion.Version20;
+            webSocket.Options.HttpVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+
             receiveTask = Task.Run(() => ConnectAndReceiveData(cancellationTokenSource.Token));
             isServiceEnabled = true;
             return true;
@@ -42,7 +47,7 @@ namespace hakoniwa.environment.impl.local
             try
             {
                 await webSocket.ConnectAsync(new Uri(serverUri), ct);
-                Console.WriteLine("WebSocket connection established.");
+                Console.WriteLine("WebSocket connection established (HTTP/2).");
             }
             catch (WebSocketException ex)
             {
@@ -51,7 +56,7 @@ namespace hakoniwa.environment.impl.local
                 return;
             }
 
-            var headerBuffer = new byte[4]; // 先頭4バイト用のバッファ
+            var headerBuffer = new byte[4];
 
             while (!ct.IsCancellationRequested && webSocket.State == WebSocketState.Open)
             {
@@ -78,8 +83,6 @@ namespace hakoniwa.environment.impl.local
                 }
 
                 int totalLength = BitConverter.ToInt32(headerBuffer, 0);
-
-                // 全データ長分のバッファを確保し、先頭4バイトをコピー
                 var dataBuffer = new byte[4 + totalLength];
                 Array.Copy(headerBuffer, 0, dataBuffer, 0, 4);
 
@@ -113,6 +116,7 @@ namespace hakoniwa.environment.impl.local
                 }
             }
         }
+
         public async Task<bool> SendData(string robotName, int channelId, byte[] pdu_data)
         {
             if (!isServiceEnabled || webSocket.State != WebSocketState.Open)
@@ -133,7 +137,7 @@ namespace hakoniwa.environment.impl.local
             try
             {
                 await webSocket.SendAsync(new ArraySegment<byte>(data), WebSocketMessageType.Binary, true, CancellationToken.None);
-                Console.WriteLine($"Sending {data.Length} bytes to WebSocket at {webSocket.CloseStatusDescription}");
+                Console.WriteLine($"Sending {data.Length} bytes to WebSocket.");
                 return true;
             }
             catch (WebSocketException ex)
@@ -142,7 +146,6 @@ namespace hakoniwa.environment.impl.local
                 return false;
             }
         }
-
 
         public bool StopService()
         {
