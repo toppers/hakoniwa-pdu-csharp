@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Xunit;
 using Fleck;
-using hakoniwa.environment.impl;
+using hakoniwa.environment.impl.local;
 using hakoniwa.environment.interfaces;
 
 namespace hakoniwa.environment.test

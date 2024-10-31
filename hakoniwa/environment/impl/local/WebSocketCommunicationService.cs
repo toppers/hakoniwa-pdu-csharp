@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using hakoniwa.environment.impl;
 using hakoniwa.environment.interfaces;
 
-namespace hakoniwa.environment.interfaces
+namespace hakoniwa.environment.impl.local
 {
     public class WebSocketCommunicationService : ICommunicationService
     {
