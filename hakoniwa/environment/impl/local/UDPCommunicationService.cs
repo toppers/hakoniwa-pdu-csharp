@@ -65,22 +65,31 @@ namespace hakoniwa.environment.interfaces
             return true;
         }
 
-        public bool SendData(string robotName, int channelId, byte[] pdu_data)
+        public async Task<bool> SendData(string robotName, int channelId, byte[] pdu_data)
         {
             if (!isServiceEnabled)
             {
                 return false;
             }
-            IDataPacket packet = new DataPacket()
+
+            try
             {
-                RobotName = robotName,
-                ChannelId = channelId,
-                BodyData = pdu_data
-            };
-            var endPoint = new IPEndPoint(IPAddress.Parse(remoteAddress), remotePort);
-            var data = packet.Encode();
-            udpClient?.Send(data, data.Length, endPoint);
-            return true;
+                IDataPacket packet = new DataPacket()
+                {
+                    RobotName = robotName,
+                    ChannelId = channelId,
+                    BodyData = pdu_data
+                };
+                var endPoint = new IPEndPoint(IPAddress.Parse(remoteAddress), remotePort);
+                var data = packet.Encode();
+                await udpClient.SendAsync(data, data.Length, endPoint);
+                return true;
+            }
+            catch (SocketException ex)
+            {
+                Console.WriteLine($"Failed to send data: {ex.Message}");
+                return false;
+            }
         }
 
         private async Task ReceiveDataLoop(CancellationToken ct)

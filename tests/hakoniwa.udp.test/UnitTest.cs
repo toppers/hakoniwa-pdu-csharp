@@ -38,7 +38,7 @@ namespace hakoniwa.environment.test
 
             // データを送信
             Console.WriteLine($"INFO: Send Data: {sendData}");
-            var sendResult = senderService.SendData(robotName, channelId, sendData);
+            var sendResult = await senderService.SendData(robotName, channelId, sendData);
             Assert.True(sendResult, "Failed to send data.");
 
             // データが受信されるまで少し待機

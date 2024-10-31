@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using hakoniwa.environment.interfaces;
 
 namespace hakoniwa.environment.impl.local
@@ -15,14 +16,18 @@ namespace hakoniwa.environment.impl.local
             return isServiceEnabled;
         }
 
-        public bool SendData(string robotName, int channelId, byte[] pdu_data)
+        public Task<bool> SendData(string robotName, int channelId, byte[] pdu_data)
         {
             if (!isServiceEnabled)
             {
-                return false;
+                return Task.FromResult(false);  // 非同期に false を返す
             }
-            return true;
+            
+            // 本来の送信処理を行う場合は、ここで非同期処理を実行し、結果を返す必要があります。
+            // ここでは簡単に true を返す
+            return Task.FromResult(true);  // 非同期に true を返す
         }
+
 
         public bool StartService(ICommunicationBuffer comm_buffer)
         {
