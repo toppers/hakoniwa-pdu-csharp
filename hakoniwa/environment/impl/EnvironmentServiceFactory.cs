@@ -15,9 +15,8 @@ namespace hakoniwa.environment.impl
     {
         IFileLoader file_loader;
         ICommunicationService comm_service;
-        public EnvironmentService(string service_type)
+        public EnvironmentService(string service_type, string file_type="local")
         {
-            file_loader = new LocalFileLoader();
             if (service_type == "dummy")
             {
                 comm_service = new DummyCommunicationService();
@@ -26,6 +25,22 @@ namespace hakoniwa.environment.impl
             {
                 //TODO fix params
                 comm_service = new UDPCommunicationService(54001, "127.0.0.1", 54002);
+            }
+            else if (service_type == "websocket_dotnet_localfile")
+            {
+                //TODO fix params
+                string serverUri = "ws://localhost:8080/echo";
+                comm_service = new WebSocketCommunicationService(serverUri);
+            }
+            else if (service_type == "websocket_jslib")
+            {
+                //TODO webgl impl
+            }
+            if (file_type == "local") {
+                file_loader = new LocalFileLoader();
+            }
+            else {
+                //TODO for unity
             }
 
         }
