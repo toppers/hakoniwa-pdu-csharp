@@ -133,6 +133,7 @@ namespace hakoniwa.environment.interfaces
             try
             {
                 await webSocket.SendAsync(new ArraySegment<byte>(data), WebSocketMessageType.Binary, true, CancellationToken.None);
+                Console.WriteLine($"Sending {data.Length} bytes to WebSocket at {webSocket.CloseStatusDescription}");
                 return true;
             }
             catch (WebSocketException ex)
