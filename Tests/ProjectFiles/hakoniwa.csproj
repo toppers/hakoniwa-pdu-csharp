@@ -7,18 +7,18 @@
 
   <ItemGroup>
     <!-- ソースコードがRuntimeフォルダ内にあるため、相対パスで指定 -->
-    <Folder Include="../Runtime/hakoniwa/pdu/" />
-    <Folder Include="../Runtime/hakoniwa/pdu/core/" />
-    <Folder Include="../Runtime/hakoniwa/pdu/interfaces/" />
-    <Folder Include="../Runtime/hakoniwa/environment/" />
-    <Folder Include="../Runtime/hakoniwa/environment/interfaces/" />
-    <Folder Include="../Runtime/hakoniwa/environment/impl/" />
-    <Folder Include="../Runtime/hakoniwa/environment/impl/local/" />
-    <Folder Include="../Runtime/hakoniwa/environment/impl/unity/" />
+    <Folder Include="../../Runtime/pdu/" />
+    <Folder Include="../../Runtime/pdu/core/" />
+    <Folder Include="../../Runtime/pdu/interfaces/" />
+    <Folder Include="../../Runtime/environment/" />
+    <Folder Include="../../Runtime/environment/interfaces/" />
+    <Folder Include="../../Runtime/environment/impl/" />
+    <Folder Include="../../Runtime/environment/impl/local/" />
+    <Folder Include="../../Runtime/environment/impl/unity/" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="../Runtime/hakoniwa/pdu/**/*.cs" />
-    <Compile Include="../Runtime/hakoniwa/environment/**/*.cs" />
+    <Compile Include="../../Runtime/pdu/**/*.cs" />
+    <Compile Include="../../Runtime/environment/**/*.cs" />
   </ItemGroup>
 
   <ItemGroup>
