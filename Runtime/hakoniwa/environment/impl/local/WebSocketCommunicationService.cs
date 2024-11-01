@@ -33,20 +33,10 @@ namespace hakoniwa.environment.impl.local
             webSocket = new ClientWebSocket();
             cancellationTokenSource = new CancellationTokenSource();
 
-            // HTTP/2に設定するためにHttpMessageInvokerを利用
-            var handler = new SocketsHttpHandler();
-            var invoker = new HttpMessageInvoker(handler);
-
-            // HTTP/2.0に設定
-            //webSocket.Options.HttpVersion = HttpVersion.Version20;
-            //webSocket.Options.HttpVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
-            // HTTP/1.1に設定
-            webSocket.Options.HttpVersion = HttpVersion.Version11;
-            webSocket.Options.HttpVersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
 
             try
             {
-                await webSocket.ConnectAsync(new Uri(serverUri), invoker, cancellationTokenSource.Token);
+                await webSocket.ConnectAsync(new Uri(serverUri), cancellationTokenSource.Token);
                 Console.WriteLine("WebSocket connection established (HTTP/2).");
             }
             catch (WebSocketException ex)
