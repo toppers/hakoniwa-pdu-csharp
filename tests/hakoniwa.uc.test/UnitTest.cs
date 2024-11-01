@@ -115,6 +115,10 @@ public class UnitTest
         var key = mgr.WritePdu(robotName, pdu);
 
         await mgr.FlushPdu(robotName, pduName);
+
+        IPdu tmp = mgr.ReadPdu(robotName, pduName);
+        Assert.Null(tmp);
+
         await Task.Delay(500);
 
         /*
@@ -128,6 +132,9 @@ public class UnitTest
 
         double r_z_val = rpdu.GetData<IPdu>("angular").GetData<double>("z");
         Assert.Equal(-1.0, r_z_val);
+
+        rpdu = mgr.ReadPdu(robotName, pduName);
+        Assert.Null(rpdu);
 
         mgr.StopService();
         testServer.StopWebSocketServer();
