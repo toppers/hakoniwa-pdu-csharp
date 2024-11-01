@@ -18,59 +18,66 @@ namespace hakoniwa.pdu.core
             ConvertFromStruct(dst, meta, HakoPduMetaDataType.PduMetaDataSize, raw_data);
             return dst;
         }
-        private void ConvertFromStruct(IPdu dst, HakoPduMetaDataType meta, int base_off, byte[] src_buffer)
+        private void ConvertFromStruct(IPdu idst, HakoPduMetaDataType meta, int base_off, byte[] src_buffer)
         {
-            foreach (var (fieldName, elm) in dst.GetPduDefinition().Get())
-            {
-                if (elm.IsPrimitive)
+            if (idst is Pdu pdu) {
+                Pdu dst = idst as Pdu;
+                foreach (var (fieldName, elm) in dst.GetPduDefinition().Get())
                 {
-                    //primitive
-                    if (elm.Type == FieldType.FixedArray)
+                    if (elm.IsPrimitive)
                     {
-                        SetEmptyPrimitiveArray(dst, elm, elm.ArrayInfo.ArrayLen);
-                        ConvertFromPrimtiveArray(dst, elm, base_off, elm.ByteMemberOffset, elm.ArrayInfo.ArrayLen, src_buffer);
-                    }
-                    else if (elm.Type == FieldType.VariableArray)
-                    {
-                        int array_size = BitConverter.ToInt32(src_buffer, base_off + elm.ByteMemberOffset);
-                        //Console.WriteLine($"DEC {fieldName}:  {array_size}");
-                        if (array_size == 0)
+                        //primitive
+                        if (elm.Type == FieldType.FixedArray)
                         {
-                            SetEmptyPrimitiveArray(dst, elm, 1);
+                            SetEmptyPrimitiveArray(dst, elm, elm.ArrayInfo.ArrayLen);
+                            ConvertFromPrimtiveArray(dst, elm, base_off, elm.ByteMemberOffset, elm.ArrayInfo.ArrayLen, src_buffer);
+                        }
+                        else if (elm.Type == FieldType.VariableArray)
+                        {
+                            int array_size = BitConverter.ToInt32(src_buffer, base_off + elm.ByteMemberOffset);
+                            //Console.WriteLine($"DEC {fieldName}:  {array_size}");
+                            if (array_size == 0)
+                            {
+                                SetEmptyPrimitiveArray(dst, elm, 1);
+                            }
+                            else
+                            {
+                                SetEmptyPrimitiveArray(dst, elm, array_size);
+                                int offset_from_heap = BitConverter.ToInt32(src_buffer, base_off + elm.ByteMemberOffset + 4);
+                                ConvertFromPrimtiveArray(dst, elm, (int)meta.heap_off, offset_from_heap, array_size, src_buffer);
+                            }
                         }
                         else
                         {
-                            SetEmptyPrimitiveArray(dst, elm, array_size);
-                            int offset_from_heap = BitConverter.ToInt32(src_buffer, base_off + elm.ByteMemberOffset + 4);
-                            ConvertFromPrimtiveArray(dst, elm, (int)meta.heap_off, offset_from_heap, array_size, src_buffer);
+                            ConvertFromPrimtive(dst, elm, base_off, elm.ByteMemberOffset, src_buffer);
                         }
                     }
                     else
                     {
-                        ConvertFromPrimtive(dst, elm, base_off, elm.ByteMemberOffset, src_buffer);
+                        //struct
+                        if (elm.Type == FieldType.FixedArray)
+                        {
+                            ConvertFromStructArray(dst, meta, elm, base_off, elm.ByteMemberOffset, elm.ArrayInfo.ArrayLen, src_buffer);
+                        }
+                        else if (elm.Type == FieldType.VariableArray)
+                        {
+                            int array_size = BitConverter.ToInt32(src_buffer, base_off + elm.ByteMemberOffset);
+                            int offset_from_heap = BitConverter.ToInt32(src_buffer, base_off + elm.ByteMemberOffset + 4);
+                            ConvertFromStructArray(dst, meta, elm, (int)meta.heap_off, offset_from_heap, array_size, src_buffer);
+                        }
+                        else
+                        {
+                            PduDataDefinition def = loader.LoadDefinition(elm.DataTypeName);
+                            Pdu child_dst = new Pdu(elm.MemberName, elm.GetPackageName(), elm.GetTypeName(), def);
+                            ConvertFromStruct(child_dst, meta, base_off + elm.ByteMemberOffset, src_buffer);
+                            dst.SetData<IPdu>(elm.MemberName, child_dst);
+                        }
                     }
                 }
-                else
-                {
-                    //struct
-                    if (elm.Type == FieldType.FixedArray)
-                    {
-                        ConvertFromStructArray(dst, meta, elm, base_off, elm.ByteMemberOffset, elm.ArrayInfo.ArrayLen, src_buffer);
-                    }
-                    else if (elm.Type == FieldType.VariableArray)
-                    {
-                        int array_size = BitConverter.ToInt32(src_buffer, base_off + elm.ByteMemberOffset);
-                        int offset_from_heap = BitConverter.ToInt32(src_buffer, base_off + elm.ByteMemberOffset + 4);
-                        ConvertFromStructArray(dst, meta, elm, (int)meta.heap_off, offset_from_heap, array_size, src_buffer);
-                    }
-                    else
-                    {
-                        PduDataDefinition def = loader.LoadDefinition(elm.DataTypeName);
-                        Pdu child_dst = new Pdu(elm.MemberName, elm.GetPackageName(), elm.GetTypeName(), def);
-                        ConvertFromStruct(child_dst, meta, base_off + elm.ByteMemberOffset, src_buffer);
-                        dst.SetData<IPdu>(elm.MemberName, child_dst);
-                    }
-                }
+            }
+            else
+            {
+                throw new InvalidCastException("IPdu オブジェクトを Pdu にキャストできませんでした。");
             }
         }
         private void ConvertFromStructArray(IPdu dst, HakoPduMetaDataType meta, IPduFieldDefinition elm, int base_off, int elm_off, int array_size, byte[] src_buffer)

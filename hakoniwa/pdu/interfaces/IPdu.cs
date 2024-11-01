@@ -6,6 +6,5 @@
         string Name { get; }
         string TypeName { get; }
         string PackageName { get; }
-        IPduDataDefinition GetPduDefinition();
     }
 }

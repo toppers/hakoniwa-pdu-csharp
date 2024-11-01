@@ -82,57 +82,65 @@ namespace hakoniwa.pdu.core
             return buffer;
         }
 
-        private void ConvertFromStruct(int parent_off, DynamicAllocator allocator, IPdu src)
+        private void ConvertFromStruct(int parent_off, DynamicAllocator allocator, IPdu isrc)
         {
-            foreach (var (fieldName, elm) in src.GetPduDefinition().Get())
+            if (isrc is Pdu pdu)
             {
-                if (elm.IsPrimitive)
+                Pdu src = isrc as Pdu;
+                foreach (var (fieldName, elm) in src.GetPduDefinition().Get())
                 {
-                    //primitive
-                    if (elm.Type == FieldType.FixedArray)
+                    if (elm.IsPrimitive)
                     {
-                        ConvertFromPrimtiveArray(parent_off, elm, allocator, src);
-                    }
-                    else if (elm.Type == FieldType.VariableArray)
-                    {
-                        int offset_from_heap = heap_allocator.Size;
-                        int array_size = ConvertFromPrimtiveArray(0, elm, heap_allocator, src);
-                        //Console.WriteLine($"{fieldName}: {array_size}");
-                        var offset_from_heap_bytes = BitConverter.GetBytes(offset_from_heap);
-                        var array_size_bytes = BitConverter.GetBytes(array_size);
-                        allocator.Add(array_size_bytes, parent_off + elm.ByteMemberOffset, array_size_bytes.Length);
-                        allocator.Add(offset_from_heap_bytes, parent_off + elm.ByteMemberOffset + array_size_bytes.Length, offset_from_heap_bytes.Length);
+                        //primitive
+                        if (elm.Type == FieldType.FixedArray)
+                        {
+                            ConvertFromPrimtiveArray(parent_off, elm, allocator, src);
+                        }
+                        else if (elm.Type == FieldType.VariableArray)
+                        {
+                            int offset_from_heap = heap_allocator.Size;
+                            int array_size = ConvertFromPrimtiveArray(0, elm, heap_allocator, src);
+                            //Console.WriteLine($"{fieldName}: {array_size}");
+                            var offset_from_heap_bytes = BitConverter.GetBytes(offset_from_heap);
+                            var array_size_bytes = BitConverter.GetBytes(array_size);
+                            allocator.Add(array_size_bytes, parent_off + elm.ByteMemberOffset, array_size_bytes.Length);
+                            allocator.Add(offset_from_heap_bytes, parent_off + elm.ByteMemberOffset + array_size_bytes.Length, offset_from_heap_bytes.Length);
+                        }
+                        else
+                        {
+                            ConvertFromPrimtive(parent_off, elm, allocator, src);
+                        }
                     }
                     else
                     {
-                        ConvertFromPrimtive(parent_off, elm, allocator, src);
+                        //struct
+                        if (elm.Type == FieldType.FixedArray)
+                        {
+                            ConvertFromStructArray(parent_off + elm.ByteMemberOffset, elm, allocator, src);
+                        }
+                        else if (elm.Type == FieldType.VariableArray)
+                        {
+                            int offset_from_heap = heap_allocator.Size;
+                            //Console.WriteLine($"ENC {fieldName}: heap_off={heap_allocator.Size}");
+                            int array_size = ConvertFromStructArray(0, elm, heap_allocator, src);
+                            //Console.WriteLine($"ENC {fieldName}: array_size={array_size}");
+                            var offset_from_heap_bytes = BitConverter.GetBytes(offset_from_heap);
+                            var array_size_bytes = BitConverter.GetBytes(array_size);
+                            //Console.WriteLine($"ENC {fieldName}: heap_allocator.Size={heap_allocator.Size}");
+                            allocator.Add(array_size_bytes, parent_off + elm.ByteMemberOffset, array_size_bytes.Length);
+                            allocator.Add(offset_from_heap_bytes, parent_off + elm.ByteMemberOffset + array_size_bytes.Length, offset_from_heap_bytes.Length);
+                        }
+                        else
+                        {
+                            ConvertFromStruct(parent_off + elm.ByteMemberOffset, allocator, src.GetData<IPdu>(elm.MemberName));
+                        }
                     }
-                }
-                else
-                {
-                    //struct
-                    if (elm.Type == FieldType.FixedArray)
-                    {
-                        ConvertFromStructArray(parent_off + elm.ByteMemberOffset, elm, allocator, src);
-                    }
-                    else if (elm.Type == FieldType.VariableArray)
-                    {
-                        int offset_from_heap = heap_allocator.Size;
-                        //Console.WriteLine($"ENC {fieldName}: heap_off={heap_allocator.Size}");
-                        int array_size = ConvertFromStructArray(0, elm, heap_allocator, src);
-                        //Console.WriteLine($"ENC {fieldName}: array_size={array_size}");
-                        var offset_from_heap_bytes = BitConverter.GetBytes(offset_from_heap);
-                        var array_size_bytes = BitConverter.GetBytes(array_size);
-                        //Console.WriteLine($"ENC {fieldName}: heap_allocator.Size={heap_allocator.Size}");
-                        allocator.Add(array_size_bytes, parent_off + elm.ByteMemberOffset, array_size_bytes.Length);
-                        allocator.Add(offset_from_heap_bytes, parent_off + elm.ByteMemberOffset + array_size_bytes.Length, offset_from_heap_bytes.Length);
-                    }
-                    else
-                    {
-                        ConvertFromStruct(parent_off + elm.ByteMemberOffset, allocator, src.GetData<IPdu>(elm.MemberName));
-                    }
-                }
+                }            }
+            else
+            {
+                throw new InvalidCastException("IPdu オブジェクトを Pdu にキャストできませんでした。");
             }
+
         }
 
         private int ConvertFromStructArray(int parent_off, IPduFieldDefinition elm, DynamicAllocator allocator, IPdu src)
