@@ -40,11 +40,11 @@ namespace hakoniwa.pdu.core
         {
             return this.PackageName + "/" + this.TypeName;
         }
-        public PduDataDefinition GetPduDefinition()
+        public IPduDataDefinition GetPduDefinition()
         {
             return pdu_definition;
         }
-        private PduFieldDefinition GetFieldDefinitionOrThrow(string field_name)
+        private IPduFieldDefinition GetFieldDefinitionOrThrow(string field_name)
         {
             var field = pdu_definition.GetFieldDefinition(field_name);
             if (field == null)

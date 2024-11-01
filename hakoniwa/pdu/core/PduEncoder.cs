@@ -89,11 +89,11 @@ namespace hakoniwa.pdu.core
                 if (elm.IsPrimitive)
                 {
                     //primitive
-                    if (elm.Type == PduFieldDefinition.FieldType.FixedArray)
+                    if (elm.Type == FieldType.FixedArray)
                     {
                         ConvertFromPrimtiveArray(parent_off, elm, allocator, src);
                     }
-                    else if (elm.Type == PduFieldDefinition.FieldType.VariableArray)
+                    else if (elm.Type == FieldType.VariableArray)
                     {
                         int offset_from_heap = heap_allocator.Size;
                         int array_size = ConvertFromPrimtiveArray(0, elm, heap_allocator, src);
@@ -111,11 +111,11 @@ namespace hakoniwa.pdu.core
                 else
                 {
                     //struct
-                    if (elm.Type == PduFieldDefinition.FieldType.FixedArray)
+                    if (elm.Type == FieldType.FixedArray)
                     {
                         ConvertFromStructArray(parent_off + elm.ByteMemberOffset, elm, allocator, src);
                     }
-                    else if (elm.Type == PduFieldDefinition.FieldType.VariableArray)
+                    else if (elm.Type == FieldType.VariableArray)
                     {
                         int offset_from_heap = heap_allocator.Size;
                         //Console.WriteLine($"ENC {fieldName}: heap_off={heap_allocator.Size}");
@@ -135,7 +135,7 @@ namespace hakoniwa.pdu.core
             }
         }
 
-        private int ConvertFromStructArray(int parent_off, PduFieldDefinition elm, DynamicAllocator allocator, IPdu src)
+        private int ConvertFromStructArray(int parent_off, IPduFieldDefinition elm, DynamicAllocator allocator, IPdu src)
         {
             PduDataDefinition def = loader.LoadDefinition(elm.DataTypeName);
             IPdu[] pdus = src.GetDataArray<IPdu>(elm.MemberName);
@@ -148,7 +148,7 @@ namespace hakoniwa.pdu.core
             return array_size;
         }
 
-        private int ConvertFromPrimtiveArray(int parent_off, PduFieldDefinition elm, DynamicAllocator allocator, IPdu src)
+        private int ConvertFromPrimtiveArray(int parent_off, IPduFieldDefinition elm, DynamicAllocator allocator, IPdu src)
         {
             int elm_off = 0;
             if (allocator.IsHeap)
@@ -265,7 +265,7 @@ namespace hakoniwa.pdu.core
         }
 
 
-        private void ConvertFromPrimtive(int parent_off, PduFieldDefinition elm, DynamicAllocator allocator, IPdu src)
+        private void ConvertFromPrimtive(int parent_off, IPduFieldDefinition elm, DynamicAllocator allocator, IPdu src)
         {
             byte[] tmp_bytes = null;
             switch (elm.DataTypeName)

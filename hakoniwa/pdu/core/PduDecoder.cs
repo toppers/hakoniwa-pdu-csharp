@@ -25,12 +25,12 @@ namespace hakoniwa.pdu.core
                 if (elm.IsPrimitive)
                 {
                     //primitive
-                    if (elm.Type == PduFieldDefinition.FieldType.FixedArray)
+                    if (elm.Type == FieldType.FixedArray)
                     {
                         SetEmptyPrimitiveArray(dst, elm, elm.ArrayInfo.ArrayLen);
                         ConvertFromPrimtiveArray(dst, elm, base_off, elm.ByteMemberOffset, elm.ArrayInfo.ArrayLen, src_buffer);
                     }
-                    else if (elm.Type == PduFieldDefinition.FieldType.VariableArray)
+                    else if (elm.Type == FieldType.VariableArray)
                     {
                         int array_size = BitConverter.ToInt32(src_buffer, base_off + elm.ByteMemberOffset);
                         //Console.WriteLine($"DEC {fieldName}:  {array_size}");
@@ -53,11 +53,11 @@ namespace hakoniwa.pdu.core
                 else
                 {
                     //struct
-                    if (elm.Type == PduFieldDefinition.FieldType.FixedArray)
+                    if (elm.Type == FieldType.FixedArray)
                     {
                         ConvertFromStructArray(dst, meta, elm, base_off, elm.ByteMemberOffset, elm.ArrayInfo.ArrayLen, src_buffer);
                     }
-                    else if (elm.Type == PduFieldDefinition.FieldType.VariableArray)
+                    else if (elm.Type == FieldType.VariableArray)
                     {
                         int array_size = BitConverter.ToInt32(src_buffer, base_off + elm.ByteMemberOffset);
                         int offset_from_heap = BitConverter.ToInt32(src_buffer, base_off + elm.ByteMemberOffset + 4);
@@ -73,7 +73,7 @@ namespace hakoniwa.pdu.core
                 }
             }
         }
-        private void ConvertFromStructArray(IPdu dst, HakoPduMetaDataType meta, PduFieldDefinition elm, int base_off, int elm_off, int array_size, byte[] src_buffer)
+        private void ConvertFromStructArray(IPdu dst, HakoPduMetaDataType meta, IPduFieldDefinition elm, int base_off, int elm_off, int array_size, byte[] src_buffer)
         {
             PduDataDefinition def = loader.LoadDefinition(elm.DataTypeName);
             Pdu[] child_pdus = new Pdu[array_size];
@@ -85,7 +85,7 @@ namespace hakoniwa.pdu.core
             }
             dst.SetData(elm.MemberName, child_pdus);
         }
-        private void ConvertFromPrimtive(IPdu dst, PduFieldDefinition elm, int base_off, int elm_off, byte[] src_buffer)
+        private void ConvertFromPrimtive(IPdu dst, IPduFieldDefinition elm, int base_off, int elm_off, byte[] src_buffer)
         {
             var off = base_off + elm_off;
             //Console.WriteLine($"DEC {elm.MemberName} off: {off}");
@@ -135,7 +135,7 @@ namespace hakoniwa.pdu.core
                     throw new InvalidCastException("Error: Can not found ptype: " + elm.MemberName);
             }
         }
-        private static void SetEmptyPrimitiveArray(IPdu dst, PduFieldDefinition elm, int array_size)
+        private static void SetEmptyPrimitiveArray(IPdu dst, IPduFieldDefinition elm, int array_size)
         {
             switch (elm.DataTypeName)
             {
@@ -184,7 +184,7 @@ namespace hakoniwa.pdu.core
                     throw new InvalidCastException("Error: Can not found ptype: " + elm.DataTypeName);
             }
         }
-        private static void ConvertFromPrimtiveArray(IPdu dst, PduFieldDefinition elm, int base_off, int elm_off, int array_size, byte[] src_buffer)
+        private static void ConvertFromPrimtiveArray(IPdu dst, IPduFieldDefinition elm, int base_off, int elm_off, int array_size, byte[] src_buffer)
         {
             int roff = base_off + elm_off;
             //Console.WriteLine($"DEC array {elm.MemberName} roff: {roff} array_size: {array_size}");

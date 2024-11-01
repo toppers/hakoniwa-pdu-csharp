@@ -43,7 +43,7 @@ namespace hakoniwa.pdu.core
         {
             string package_name = package_type_name.Split("/")[0];
             string[] lines = textContent.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
-            Dictionary<string, PduFieldDefinition> fieldDefinitions = new Dictionary<string, PduFieldDefinition>();
+            Dictionary<string, IPduFieldDefinition> fieldDefinitions = new Dictionary<string, IPduFieldDefinition>();
             int total_size = 0;
 
             foreach (string line in lines)
@@ -72,13 +72,13 @@ namespace hakoniwa.pdu.core
         {
             switch (elm.Type)
             {
-                case PduFieldDefinition.FieldType.Single:
+                case FieldType.Single:
                     return elm.ByteMemberOffset + elm.ByteMemberDataTypeSize;
 
-                case PduFieldDefinition.FieldType.FixedArray:
+                case FieldType.FixedArray:
                     return elm.ByteMemberOffset + (elm.ByteMemberDataTypeSize * elm.ArrayInfo.ArrayLen);
 
-                case PduFieldDefinition.FieldType.VariableArray:
+                case FieldType.VariableArray:
                     return elm.ByteMemberOffset + int.Parse(attr[6]);
 
                 default:
@@ -96,9 +96,9 @@ namespace hakoniwa.pdu.core
             {
                 Type = attr[0] switch
                 {
-                    "array" => PduFieldDefinition.FieldType.FixedArray,
-                    "varray" => PduFieldDefinition.FieldType.VariableArray,
-                    _ => PduFieldDefinition.FieldType.Single
+                    "array" => FieldType.FixedArray,
+                    "varray" => FieldType.VariableArray,
+                    _ => FieldType.Single
                 },
                 IsPrimitive = attr[1].Equals("primitive"),
                 MemberName = attr[2],
@@ -107,11 +107,11 @@ namespace hakoniwa.pdu.core
                 ByteMemberDataTypeSize = GetDataTypeSize(attr)
             };
 
-            if (elm.Type != PduFieldDefinition.FieldType.Single)
+            if (elm.Type != FieldType.Single)
             {
                 elm.ArrayInfo = new PduArrayFieldDefinition
                 {
-                    ArrayLen = elm.Type == PduFieldDefinition.FieldType.FixedArray ? int.Parse(attr[6]) : -1
+                    ArrayLen = elm.Type == FieldType.FixedArray ? int.Parse(attr[6]) : -1
                 };
             }
 

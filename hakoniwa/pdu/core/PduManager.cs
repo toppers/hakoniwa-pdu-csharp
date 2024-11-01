@@ -5,7 +5,7 @@ using hakoniwa.pdu.interfaces;
 
 namespace hakoniwa.pdu.core
 {
-    public class PduManager
+    public class PduManager: IPduManager
     {
         private IEnvironmentService service;
         private PduBuffer buffers;
@@ -131,7 +131,7 @@ namespace hakoniwa.pdu.core
                 throw new ArgumentException($"PduManger Service is not enabled");
             }
 
-            string key = robotName + "_" + pduName;
+            string key = GetKey(robotName, pduName);
             byte[] raw_data = buffers.GetBuffer(key);
             if (raw_data == null)
             {
@@ -143,6 +143,10 @@ namespace hakoniwa.pdu.core
             GetPackageTypeName(robotName, pduName, out packageName, out typeName);
 
             return decoder.Decode(pduName, packageName, typeName, raw_data);
+        }
+        public string GetKey(string robotName, string pduName)
+        {
+            return robotName + "_" + pduName;
         }
         // robotNameとpduNameからpackageNameとtypeNameを抽出するメソッド
         private void GetPackageTypeName(string robotName, string pduName, out string packageName, out string typeName)
