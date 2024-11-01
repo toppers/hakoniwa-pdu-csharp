@@ -8,13 +8,17 @@ fi
 
 CMD=${1}
 
-cd ProjectFiles
+CURR_DIR=`pwd`
+cd ../ProjectFiles
 dotnet build
-cd ..
-
-cd tests
+cd ${CURR_DIR}
+pwd
 for entry in $(ls)
 do
+	if [ -f $entry ]
+	then
+		continue
+	fi
 	echo -e "\033[0;32m#### ${entry}: ${CMD}\033[0m"
 	cd ${entry}
 	dotnet ${CMD}
