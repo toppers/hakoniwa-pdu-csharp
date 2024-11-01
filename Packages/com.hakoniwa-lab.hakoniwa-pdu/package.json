@@ -1,0 +1,26 @@
+{
+    "name": "com.hakoniwa-lab.hakoniwa-pdu",
+    "version": "1.0.0",
+    "displayName": "Hakoniwa.PDU",
+    "description": "This package provides a Hakoniwa PDU management system for Unity.",
+    "unity": "2022.3",
+    "author": {
+      "name": "Takashi Mori",
+      "email": "tmori@hakoniwa-lab.net",
+      "url": "https://hakoniwa-lab.net"
+    },
+    "license": "MIT",
+    "dependencies": {
+      "com.unity.nuget.newtonsoft-json": "3.0.2"
+    },
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/toppers/hakoniwa-pdu-csharp.git"
+    },
+    "keywords": [
+      "PDU",
+      "Unity",
+      "Communication",
+      "Hakoniwa"
+    ]
+}
