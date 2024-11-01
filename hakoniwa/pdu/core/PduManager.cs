@@ -136,7 +136,7 @@ namespace hakoniwa.pdu.core
             byte[] raw_data = buffers.GetBuffer(key);
             if (raw_data == null)
             {
-                throw new ArgumentException($"PDU type not found for {robotName}/{pduName}");
+                return null;
             }
 
             string packageName;

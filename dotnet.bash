@@ -13,9 +13,10 @@ dotnet build
 cd ..
 
 cd tests
-for entry in pdu udp websocket
+for entry in $(ls)
 do
-	cd hakoniwa.${entry}.test
+	echo -e "\033[0;32m#### ${entry}: ${CMD}\033[0m"
+	cd ${entry}
 	dotnet ${CMD}
 	cd ..
 done
