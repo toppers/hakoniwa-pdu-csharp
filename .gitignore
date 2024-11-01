@@ -1,4 +1,8 @@
 # Unity 専用設定
+# Ignore all of Packages except for custom package
+/Packages/*
+!/Packages/com.hakoniwa-lab.hakoniwa-pdu/
+
 /[Ll]ibrary/
 /[Tt]emp/
 /[Oo]bj/
@@ -83,7 +87,7 @@ TestResults/
 *.coverage
 
 # NuGetパッケージ
-packages/
+#packages/
 *.nupkg
 *.snupkg
 .nuget/
