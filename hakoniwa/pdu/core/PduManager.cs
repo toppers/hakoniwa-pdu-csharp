@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using hakoniwa.environment.interfaces;
 using hakoniwa.pdu.interfaces;
 
@@ -21,7 +22,7 @@ namespace hakoniwa.pdu.core
             string fullPath = System.IO.Path.Combine(config_path, "custom");
             pdu_channel_config = pdu_channel_loader.Load(fullPath, ".json");
         }
-        public bool StartService()
+        public async Task<bool> StartService()
         {
             if (service.GetCommunication().IsServiceEnabled())
             {
@@ -31,7 +32,7 @@ namespace hakoniwa.pdu.core
             decoder = new PduDecoder(pdu_definition_loader);
             encoder = new PduEncoder(pdu_definition_loader);
 
-            service.GetCommunication().StartService(buffers);
+            await service.GetCommunication().StartService(buffers);
             return false;
         }
         public bool StopService()
@@ -50,6 +51,7 @@ namespace hakoniwa.pdu.core
         {
             if (!service.GetCommunication().IsServiceEnabled())
             {
+                Console.WriteLine("Service is not available");
                 return null;
             }
 
@@ -98,29 +100,28 @@ namespace hakoniwa.pdu.core
 
             byte[] encodedData = encoder.Encode(pdu as Pdu);
             //Console.WriteLine($"encodedData Len: {encodedData.Length}");
-            string key = robotName + "_" + pdu.Name;
+            string key = GetKey(robotName, pdu.Name);
             buffers.SetBuffer(key, encodedData);
             return key;
         }
-        public bool FlushPdu(string key)
+        public async Task<bool> FlushPdu(string robotName, string pduName)
         {
             if (!service.GetCommunication().IsServiceEnabled())
             {
                 throw new ArgumentException($"PduManger Service is not enabled");
             }
+            string key = GetKey(robotName, pduName);
             byte[] pdu_raw_data = buffers.GetBuffer(key);
             if (pdu_raw_data == null)
             {
                 return false;
             }
-            string robotName = key.Split("_")[0];
-            string pduName = key.Split("_")[1];
             int channel_id = pdu_channel_config.GetChannelId(robotName, pduName);
             if (channel_id < 0)
             {
                 throw new ArgumentException($"PDU channel ID not found for {key}");
             }
-            service.GetCommunication().SendData(robotName, channel_id, pdu_raw_data);
+            await service.GetCommunication().SendData(robotName, channel_id, pdu_raw_data);
             return true;
         }
 

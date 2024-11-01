@@ -2,6 +2,7 @@
 using hakoniwa.environment.impl.local;
 using hakoniwa.environment.interfaces;
 using Newtonsoft.Json;
+using System.IO;
 
 namespace hakoniwa.environment.impl
 {
@@ -24,9 +25,9 @@ namespace hakoniwa.environment.impl
     }    
     public class EnvironmentServiceFactory
     {
-        static public IEnvironmentService Create(string service_type)
+        static public IEnvironmentService Create(string service_type, string file_type="local", string path=".")
         {
-            return new EnvironmentService(service_type);
+            return new EnvironmentService(service_type, file_type, path);
         }
     }
     public class EnvironmentService : IEnvironmentService
@@ -34,10 +35,11 @@ namespace hakoniwa.environment.impl
         IFileLoader file_loader;
         ICommunicationService comm_service;
 
-        private CommServiceConfig loadCommServiceConfig()
+        private CommServiceConfig loadCommServiceConfig(string path)
         {
-            string param = file_loader.LoadText("comm_service_config", ".json");
-
+            string relative_path = path + "/" + "comm_service_config";
+            string normalizedPath = relative_path.Replace('/', Path.DirectorySeparatorChar);
+            string param = file_loader.LoadText(normalizedPath, ".json");
             try
             {
                 CommServiceConfig config = JsonConvert.DeserializeObject<CommServiceConfig>(param);
@@ -49,7 +51,7 @@ namespace hakoniwa.environment.impl
                 return null;
             }
         }
-        public EnvironmentService(string service_type, string file_type="local")
+        public EnvironmentService(string service_type, string file_type, string path)
         {
             if (file_type == "local") {
                 file_loader = new LocalFileLoader();
@@ -63,12 +65,12 @@ namespace hakoniwa.environment.impl
             }
             else if (service_type == "udp")
             {
-                var config = loadCommServiceConfig();
+                var config = loadCommServiceConfig(path);
                 comm_service = new UDPCommunicationService(config.Udp.LocalPort, config.Udp.RemoteIPAddress, config.Udp.RemotePort);
             }
             else if (service_type == "websocket_dotnet_localfile")
             {
-                var config = loadCommServiceConfig();
+                var config = loadCommServiceConfig(path);
                 string serverUri = config.WebSocket.ServerURI;
                 comm_service = new WebSocketCommunicationService(serverUri);
             }

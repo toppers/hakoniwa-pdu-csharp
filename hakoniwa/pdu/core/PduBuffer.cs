@@ -59,6 +59,7 @@ namespace hakoniwa.pdu.core
             if (pduName != null)
             {
                 string key = packet.GetRobotName() + "_" + pduName;
+                Console.WriteLine($"put packet: {key}");
                 this.SetBuffer(key, packet.GetPduData());
             }
         }

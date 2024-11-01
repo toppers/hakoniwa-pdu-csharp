@@ -87,7 +87,7 @@ namespace hakoniwa.environment.impl.local
 
                 if (headerResult.Count < 4)
                 {
-                    Console.WriteLine("Header size is less than expected.");
+                    Console.WriteLine($"Header size is less than expected: {headerResult.Count}");
                     continue;
                 }
 
