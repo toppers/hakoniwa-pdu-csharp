@@ -24,7 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\hakoniwa\hakoniwa.csproj" />
+    <!-- 修正されたプロジェクト参照 -->
+    <ProjectReference Include="../../ProjectFiles/hakoniwa.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="test_data/**/*">

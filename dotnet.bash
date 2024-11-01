@@ -8,7 +8,7 @@ fi
 
 CMD=${1}
 
-cd hakoniwa
+cd ProjectFiles
 dotnet build
 cd ..
 
