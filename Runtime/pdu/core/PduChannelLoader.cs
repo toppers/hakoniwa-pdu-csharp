@@ -6,6 +6,7 @@ namespace hakoniwa.pdu.core
 {
     public class PduChannelConfig
     {
+        [JsonConstructor]
         public PduChannelConfig() { }
         public List<RobotConfig> robots { get; set; }
         public string GetPduType(string robotName, string pduName)
@@ -91,6 +92,7 @@ namespace hakoniwa.pdu.core
 
     public class RobotConfig
     {
+        [JsonConstructor]
         public RobotConfig() { }
         public string name { get; set; }
         public List<PduChannel> rpc_pdu_readers { get; set; }
@@ -101,6 +103,7 @@ namespace hakoniwa.pdu.core
 
     public class PduChannel
     {
+        [JsonConstructor]
         public PduChannel() { }
         public string type { get; set; }
         public string org_name { get; set; }
