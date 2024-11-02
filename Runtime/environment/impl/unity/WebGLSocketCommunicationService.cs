@@ -19,7 +19,7 @@ public class WebGLSocketCommunicationService : ICommunicationService, IDisposabl
     {
         return webSocket;
     }
-    public JsSocketCommunicationService(string serverUri)
+    public WebGLSocketCommunicationService(string serverUri)
     {
         this.serverUri = serverUri;
     }
