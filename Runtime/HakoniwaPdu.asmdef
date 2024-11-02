@@ -1,7 +1,6 @@
 {
     "name": "HakoniwaPdu",
     "references": [
-        "NativeWebSocket",
-		"Newtonsoft.Json"
+        "endel.nativewebsocket"
     ]
 }
