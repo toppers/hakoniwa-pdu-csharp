@@ -5,5 +5,6 @@ namespace hakoniwa.environment.interfaces
     {
         IFileLoader GetFileLoader();
         ICommunicationService GetCommunication();
+        void SetCommunication(ICommunicationService comm);
     }
 }

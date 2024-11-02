@@ -38,6 +38,11 @@ namespace hakoniwa.environment.impl
         IFileLoader file_loader;
         ICommunicationService comm_service;
 
+        public void SetCommunication(ICommunicationService comm)
+        {
+            this.comm_service = comm;
+        }
+
         private CommServiceConfig loadCommServiceConfig(string path)
         {
             string relative_path = path + "/" + "comm_service_config";
