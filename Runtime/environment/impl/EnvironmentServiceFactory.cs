@@ -84,9 +84,11 @@ namespace hakoniwa.environment.impl
                 string serverUri = config.WebSocket.ServerURI;
                 comm_service = new WebSocketCommunicationService(serverUri);
             }
-            else if (service_type == "websocket_jslib")
+            else if (service_type == "websocket_unity")
             {
-                //TODO webgl impl
+                var config = loadCommServiceConfig(path);
+                string serverUri = config.WebSocket.ServerURI;
+                comm_service = new WebGLSocketCommunicationService(serverUri);
             }
 
 
