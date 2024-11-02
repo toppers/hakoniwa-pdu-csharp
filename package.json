@@ -11,8 +11,11 @@
     },
     "license": "MIT",
     "dependencies": {
-      "com.unity.nuget.newtonsoft-json": "3.0.2"
-    },
+      "com.unity.nuget.newtonsoft-json": "3.0.2",
+      "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
+      "com.mattun.asyncwebsocket": "https://github.com/AtaruMatsudaira/AsyncWebSocket.git?path=/Assets/Plugins/AsyncWebSocket",
+      "com.yoshd.unitywebsocket": "https://github.com/yoshd/UnityWebSocket.git#v0.1.4"
+      },
     "repository": {
       "type": "git",
       "url": "https://github.com/toppers/hakoniwa-pdu-csharp.git"
