@@ -51,7 +51,6 @@ namespace hakoniwa.pdu.core
         {
             if (!service.GetCommunication().IsServiceEnabled())
             {
-                Console.WriteLine("Service is not available");
                 return null;
             }
 
@@ -76,7 +75,7 @@ namespace hakoniwa.pdu.core
         {
             if (!service.GetCommunication().IsServiceEnabled())
             {
-                throw new ArgumentException($"PduManger Service is not enabled");
+                return null;
             }
             // 定義をロードし、存在を確認
             var definition = pdu_definition_loader.LoadDefinition(packageName + "/" + typeName);
@@ -95,7 +94,7 @@ namespace hakoniwa.pdu.core
         {
             if (!service.GetCommunication().IsServiceEnabled())
             {
-                throw new ArgumentException($"PduManger Service is not enabled");
+                return null;
             }
 
             byte[] encodedData = encoder.Encode(pdu as Pdu);
@@ -108,7 +107,7 @@ namespace hakoniwa.pdu.core
         {
             if (!service.GetCommunication().IsServiceEnabled())
             {
-                throw new ArgumentException($"PduManger Service is not enabled");
+                return false;
             }
             string key = GetKey(robotName, pduName);
             byte[] pdu_raw_data = buffers.GetBuffer(key);
@@ -129,7 +128,7 @@ namespace hakoniwa.pdu.core
         {
             if (!service.GetCommunication().IsServiceEnabled())
             {
-                throw new ArgumentException($"PduManger Service is not enabled");
+                return null;
             }
 
             string key = GetKey(robotName, pduName);
