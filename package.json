@@ -12,7 +12,7 @@
     "license": "MIT",
     "dependencies": {
       "com.unity.nuget.newtonsoft-json": "3.0.2",
-      "com.cysharp.unitask": "2.3.3"
+      "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git#main"
       },
     "repository": {
       "type": "git",
