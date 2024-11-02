@@ -1,5 +1,4 @@
-﻿#if UNITY
-using UnityEngine;
+﻿using UnityEngine;
 using System.IO;
 using hakoniwa.environment.interfaces;
 
@@ -13,7 +12,9 @@ namespace hakoniwa.environment.impl.unity
 
         public string LoadText(string filePath, string extension = null)
         {
-            string fullPath = extension == null ? filePath : filePath + extension;
+            // ./や先頭の/を削除した形でfullPathを作成
+            string fullPath = filePath.TrimStart('.', '/');
+
             TextAsset textAsset = Resources.Load<TextAsset>(fullPath);
             if (textAsset == null)
             {
@@ -23,4 +24,3 @@ namespace hakoniwa.environment.impl.unity
         }
     }
 }
-#endif

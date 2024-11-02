@@ -1,5 +1,6 @@
 ﻿using System;
 using hakoniwa.environment.impl.local;
+using hakoniwa.environment.impl.unity;
 using hakoniwa.environment.interfaces;
 using Newtonsoft.Json;
 using System.IO;
@@ -57,9 +58,7 @@ namespace hakoniwa.environment.impl
                 file_loader = new LocalFileLoader();
             }
             else if (file_type == "unity") {
-#if UNITY
                 file_loader = new ResourcesFileLoader();
-#endif
             }
             if (service_type == "dummy")
             {
