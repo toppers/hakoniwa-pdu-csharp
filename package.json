@@ -12,9 +12,10 @@
     "license": "MIT",
     "dependencies": {
       "com.unity.nuget.newtonsoft-json": "3.0.2",
-      "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
-      "com.mattun.asyncwebsocket": "https://github.com/AtaruMatsudaira/AsyncWebSocket.git?path=/Assets/Plugins/AsyncWebSocket",
-      "com.yoshd.unitywebsocket": "https://github.com/yoshd/UnityWebSocket.git#v0.1.4"
+      "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git#latest",
+      "com.endel.nativewebsocket": "https://github.com/endel/NativeWebSocket.git#upm",
+      "com.mattun.asyncwebsocket": "https://github.com/AtaruMatsudaira/AsyncWebSocket.git?path=/Assets/Plugins/AsyncWebSocket#master",
+      "com.yoshd.unitywebsocket": "https://github.com/yoshd/UnityWebSocket.git#v0.1.4"  
       },
     "repository": {
       "type": "git",
