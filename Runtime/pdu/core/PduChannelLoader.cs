@@ -1,4 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿#if !UNITY_WEBGL
+using Newtonsoft.Json;
+#else
+using UnityEngine;
+#endif
 using System.Collections.Generic;
 using hakoniwa.environment.interfaces;
 
@@ -6,13 +10,17 @@ namespace hakoniwa.pdu.core
 {
     public class PduChannelConfig
     {
-        [JsonConstructor]
+#if UNITY_WEBGL
+        public List<RobotConfig> robots = new List<RobotConfig>();
+#else
+        [Newtonsoft.Json.JsonConstructor]
         public PduChannelConfig(List<RobotConfig> robots)
         {
             this.robots = robots ?? new List<RobotConfig>();
         }
-
+        
         public List<RobotConfig> robots { get; set; } = new List<RobotConfig>();
+#endif
 
         public string GetPduType(string robotName, string pduName)
         {
@@ -90,50 +98,28 @@ namespace hakoniwa.pdu.core
         }
     }
 
+    [System.Serializable]
     public class RobotConfig
     {
-        [JsonConstructor]
-        public RobotConfig(string name, List<PduChannel> rpc_pdu_readers, List<PduChannel> rpc_pdu_writers, List<PduChannel> shm_pdu_readers, List<PduChannel> shm_pdu_writers)
-        {
-            this.name = name;
-            this.rpc_pdu_readers = rpc_pdu_readers ?? new List<PduChannel>();
-            this.rpc_pdu_writers = rpc_pdu_writers ?? new List<PduChannel>();
-            this.shm_pdu_readers = shm_pdu_readers ?? new List<PduChannel>();
-            this.shm_pdu_writers = shm_pdu_writers ?? new List<PduChannel>();
-        }
-
-        public string name { get; set; }
-        public List<PduChannel> rpc_pdu_readers { get; set; } = new List<PduChannel>();
-        public List<PduChannel> rpc_pdu_writers { get; set; } = new List<PduChannel>();
-        public List<PduChannel> shm_pdu_readers { get; set; } = new List<PduChannel>();
-        public List<PduChannel> shm_pdu_writers { get; set; } = new List<PduChannel>();
+        public string name;
+        public List<PduChannel> rpc_pdu_readers = new List<PduChannel>();
+        public List<PduChannel> rpc_pdu_writers = new List<PduChannel>();
+        public List<PduChannel> shm_pdu_readers = new List<PduChannel>();
+        public List<PduChannel> shm_pdu_writers = new List<PduChannel>();
     }
 
+    [System.Serializable]
     public class PduChannel
     {
-        [JsonConstructor]
-        public PduChannel(string type, string org_name, string name, string class_name, string conv_class_name, int channel_id, int pdu_size, int write_cycle, string method_type)
-        {
-            this.type = type;
-            this.org_name = org_name;
-            this.name = name;
-            this.class_name = class_name;
-            this.conv_class_name = conv_class_name;
-            this.channel_id = channel_id;
-            this.pdu_size = pdu_size;
-            this.write_cycle = write_cycle;
-            this.method_type = method_type;
-        }
-
-        public string type { get; set; }
-        public string org_name { get; set; }
-        public string name { get; set; }
-        public string class_name { get; set; }
-        public string conv_class_name { get; set; }
-        public int channel_id { get; set; }
-        public int pdu_size { get; set; }
-        public int write_cycle { get; set; }
-        public string method_type { get; set; }
+        public string type;
+        public string org_name;
+        public string name;
+        public string class_name;
+        public string conv_class_name;
+        public int channel_id;
+        public int pdu_size;
+        public int write_cycle;
+        public string method_type;
     }
 
     public class PduChannelLoader
@@ -148,7 +134,14 @@ namespace hakoniwa.pdu.core
         public PduChannelConfig Load(string filePath, string extension)
         {
             string jsonContent = fileLoader.LoadText(filePath, extension);
-            PduChannelConfig config = JsonConvert.DeserializeObject<PduChannelConfig>(jsonContent);
+
+#if UNITY_WEBGL
+            // WebGL用のJsonUtilityでデシリアライズ
+            PduChannelConfig config = JsonUtility.FromJson<PduChannelConfig>(jsonContent);
+#else
+            // 現行コード：Newtonsoft.Jsonを使用
+            PduChannelConfig config = Newtonsoft.Json.JsonConvert.DeserializeObject<PduChannelConfig>(jsonContent);
+#endif
             return config;
         }
     }
