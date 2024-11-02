@@ -1,193 +1,182 @@
-
 #if UNITY_WEBGL
-using System;
-using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using NativeWebSocket;
 using hakoniwa.environment.interfaces;
+using System;
+using hakoniwa.environment.impl;
+using UnityEngine;
 
-namespace hakoniwa.environment.impl.unity
+public class WebGLSocketCommunicationService : ICommunicationService, IDisposable
 {
-    public class WebGLSocketCommunicationService : ICommunicationService
+    private readonly string serverUri;
+    private WebSocket webSocket;
+    private ICommunicationBuffer buffer;
+    private bool isServiceEnabled = false;
+
+
+    public WebSocket GetWebSocket()
     {
-        private readonly string serverUri;
-        private ClientWebSocket webSocket;
-        private CancellationTokenSource cancellationTokenSource;
-        private Task receiveTask;
-        private ICommunicationBuffer buffer;
-        private bool isServiceEnabled = false;
-        public string GetServerUri()
+        return webSocket;
+    }
+    public JsSocketCommunicationService(string serverUri)
+    {
+        this.serverUri = serverUri;
+    }
+
+    public bool IsServiceEnabled()
+    {
+        return isServiceEnabled;
+    }
+
+    async public Task<bool> SendData(string robotName, int channelId, byte[] pdu_data)
+    {
+        if (!isServiceEnabled || webSocket.State != WebSocketState.Open)
         {
-            return serverUri;
+            Debug.Log($"send error: isServiceEnabled={isServiceEnabled} webSocket.State ={webSocket.State }");
+            return false;
         }
 
-        public WebGLSocketCommunicationService(string serverUri)
+        IDataPacket packet = new DataPacket()
         {
-            this.serverUri = serverUri;
+            RobotName = robotName,
+            ChannelId = channelId,
+            BodyData = pdu_data
+        };
+
+        var data = packet.Encode();
+
+        try
+        {
+            await webSocket.Send(data);
+            return true;
+        }
+        catch (WebSocketException ex)
+        {
+            Debug.Log($"Failed to send data: {ex.Message}");
+            return false;
+        }
+    }
+
+    async public Task<bool> StartService(ICommunicationBuffer comm_buffer)
+    {
+        if (isServiceEnabled)
+        {
+            return false;
         }
 
-        public async Task<bool> StartService(ICommunicationBuffer comm_buffer)
+        buffer = comm_buffer;
+        webSocket = new WebSocket(serverUri);
+
+        webSocket.OnOpen += () =>
         {
-            if (isServiceEnabled)
-            {
-                return false;
-            }
+            Debug.Log("Connection open!");
+        };
 
-            buffer = comm_buffer;
-            webSocket = new ClientWebSocket();
-            cancellationTokenSource = new CancellationTokenSource();
+        webSocket.OnError += (e) =>
+        {
+            Debug.Log("Error! " + e);
+        };
 
+        webSocket.OnClose += (e) =>
+        {
+            Debug.Log("Connection closed!");
+        };
+
+        webSocket.OnMessage += (bytes) =>
+        {
+            //Debug.Log("OnMessage event triggered!");
 
             try
             {
-                await webSocket.ConnectAsync(new Uri(serverUri), cancellationTokenSource.Token);
-                Console.WriteLine("WebSocket connection established (HTTP/2).");
-            }
-            catch (WebSocketException ex)
-            {
-                Console.WriteLine($"WebSocket connection error: {ex.Message}");
-                isServiceEnabled = false;
-                return false;
-            }
-            // 非同期で受信タスクを開始
-            receiveTask = Task.Run(() => ReceiveData(cancellationTokenSource.Token));
-            isServiceEnabled = true;
-            return true;
-        }
-
-
-        private async Task ReceiveData(CancellationToken ct)
-        {
-            var headerBuffer = new byte[4];
-            Console.WriteLine("Start ReceiveData...");
-            while (!ct.IsCancellationRequested && webSocket.State == WebSocketState.Open)
-            {
-                WebSocketReceiveResult headerResult;
-                try
+                // 4バイトのヘッダーを読み取り、メッセージ全体の長さを取得
+                if (bytes.Length < 4)
                 {
-                    headerResult = await webSocket.ReceiveAsync(new ArraySegment<byte>(headerBuffer), ct);
-                    //Console.WriteLine($"headerResult: {headerResult.Count}");
-                }
-                catch (OperationCanceledException)
-                {
-                    Console.WriteLine("Receive operation canceled.");
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Receive error: {ex.Message}");
-                    break;
+                    Debug.LogWarning("Header is incomplete.");
+                    return;
                 }
 
-                if (headerResult.Count < 4)
+                int totalLength = BitConverter.ToInt32(bytes, 0);
+                //Debug.Log("Total Length: " + totalLength);
+
+                // データの長さが一致する場合のみ処理を続ける
+                if (bytes.Length == 4 + totalLength)
                 {
-                    Console.WriteLine($"Header size is less than expected: {headerResult.Count}");
-                    continue;
-                }
+                    //DumpDataBuffer(completeData);
 
-                int totalLength = BitConverter.ToInt32(headerBuffer, 0);
-                var dataBuffer = new byte[4 + totalLength];
-                Array.Copy(headerBuffer, 0, dataBuffer, 0, 4);
-
-                int bytesRead = 0;
-                while (bytesRead < totalLength && !ct.IsCancellationRequested)
-                {
-                    try
-                    {
-                        var segment = new ArraySegment<byte>(dataBuffer, 4 + bytesRead, totalLength - bytesRead);
-                        WebSocketReceiveResult result = await webSocket.ReceiveAsync(segment, ct);
-                        bytesRead += result.Count;
-                        //Console.WriteLine($"bytesRead: {bytesRead} totalLength: {totalLength}");
-
-                        if (result.MessageType == WebSocketMessageType.Close)
-                        {
-                            await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, ct);
-                            return;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error receiving data: {ex.Message}");
-                        break;
-                    }
-                }
-
-                if (bytesRead == totalLength)
-                {
-                    IDataPacket packet = DataPacket.Decode(dataBuffer);
+                    IDataPacket packet = DataPacket.Decode(bytes);
                     buffer.PutPacket(packet);
-                    //Console.WriteLine("Data received and processed.");
+                    //Debug.Log("Data received and processed.");
+                }
+                else
+                {
+                    Debug.LogWarning("Received data length mismatch.");
                 }
             }
-        }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Receive error: {ex.Message}");
+            }
+        };
 
-        public async Task<bool> SendData(string robotName, int channelId, byte[] pdu_data)
+
+        try
         {
-            if (!isServiceEnabled || webSocket.State != WebSocketState.Open)
-            {
-                Console.WriteLine($"send error: isServiceEnabled={isServiceEnabled} webSocket.State ={webSocket.State }");
-                return false;
-            }
-
-            IDataPacket packet = new DataPacket()
-            {
-                RobotName = robotName,
-                ChannelId = channelId,
-                BodyData = pdu_data
-            };
-
-            var data = packet.Encode();
-
-            try
-            {
-                await webSocket.SendAsync(new ArraySegment<byte>(data), WebSocketMessageType.Binary, true, CancellationToken.None);
-                Console.WriteLine($"Sending {data.Length} bytes to WebSocket.");
-                return true;
-            }
-            catch (WebSocketException ex)
-            {
-                Console.WriteLine($"Failed to send data: {ex.Message}");
-                return false;
-            }
+            Debug.Log("Start Connect");
+            await webSocket.Connect();
         }
-
-        public bool StopService()
+        catch (WebSocketException ex)
         {
-            Console.WriteLine("Stop Service");
-            if (!isServiceEnabled)
-            {
-                return false;
-            }
-
-            if (webSocket.State == WebSocketState.Open)
-            {
-                webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Service stopping", CancellationToken.None).Wait();
-            }
-
-            cancellationTokenSource?.Cancel();
-
-            try
-            {
-                receiveTask?.Wait();
-            }
-            catch (AggregateException e)
-            {
-                Console.WriteLine($"Exception in StopService: {e.Message}");
-            }
-            finally
-            {
-                webSocket?.Dispose();
-                cancellationTokenSource?.Dispose();
-                isServiceEnabled = false;
-            }
-
-            return true;
+            Debug.Log($"WebSocket connection error: {ex.Message}");
+            isServiceEnabled = false;
+            return false;
         }
-
-        public bool IsServiceEnabled()
+        catch (Exception ex)
         {
-            return isServiceEnabled;
+            Debug.Log($"Unexpected connection error: {ex.Message}");
+            isServiceEnabled = false;
+            return false;
         }
+
+        isServiceEnabled = true;
+        return true;
+    }
+
+
+    private void DumpDataBuffer(byte[] dataBuffer)
+    {
+        Debug.Log("Data Buffer Dump:");
+        for (int i = 0; i < dataBuffer.Length; i++)
+        {
+            Debug.Log($"Byte {i}: {dataBuffer[i]:X2}");
+        }
+    }
+
+    public bool StopService()
+    {
+        Debug.Log("Stop Service");
+        if (!isServiceEnabled)
+        {
+            return false;
+        }
+
+        isServiceEnabled = false;
+
+        if (webSocket != null && webSocket.State == WebSocketState.Open)
+        {
+            webSocket.Close();
+        }
+
+        return true;
+    }
+    public void Dispose()
+    {
+        StopService();
+        webSocket = null;
+    }
+    public string GetServerUri()
+    {
+        return serverUri;
     }
 }
 #endif
