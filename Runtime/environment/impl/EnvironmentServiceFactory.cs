@@ -56,8 +56,10 @@ namespace hakoniwa.environment.impl
             if (file_type == "local") {
                 file_loader = new LocalFileLoader();
             }
-            else {
-                //TODO for unity
+            else if (file_type == "unity") {
+#if UNITY
+                file_loader = new ResourcesFileLoader();
+#endif
             }
             if (service_type == "dummy")
             {
@@ -68,7 +70,7 @@ namespace hakoniwa.environment.impl
                 var config = loadCommServiceConfig(path);
                 comm_service = new UDPCommunicationService(config.Udp.LocalPort, config.Udp.RemoteIPAddress, config.Udp.RemotePort);
             }
-            else if (service_type == "websocket_dotnet_localfile")
+            else if (service_type == "websocket_dotnet")
             {
                 var config = loadCommServiceConfig(path);
                 string serverUri = config.WebSocket.ServerURI;

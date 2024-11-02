@@ -88,7 +88,7 @@ public class UnitTest
 
         string robotName = "DroneTransporter";
         string pduName = "drone_pos";
-        IEnvironmentService service = EnvironmentServiceFactory.Create("websocket_dotnet_localfile", "local", testDir);
+        IEnvironmentService service = EnvironmentServiceFactory.Create("websocket_dotnet", "local", testDir);
         IPduManager mgr = new PduManager(service, testDir);
         await mgr.StartService();
 
