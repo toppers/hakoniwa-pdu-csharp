@@ -16,6 +16,10 @@ namespace hakoniwa.environment.impl.unity
         private Task receiveTask;
         private ICommunicationBuffer buffer;
         private bool isServiceEnabled = false;
+        public string GetServerUri()
+        {
+            return serverUri;
+        }
 
         public WebGLSocketCommunicationService(string serverUri)
         {

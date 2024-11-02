@@ -17,6 +17,10 @@ namespace hakoniwa.environment.impl.local
         private ICommunicationBuffer buffer;
         private bool isServiceEnabled = false;
 
+        public string GetServerUri()
+        {
+            return serverUri;
+        }
         public WebSocketCommunicationService(string serverUri)
         {
             this.serverUri = serverUri;

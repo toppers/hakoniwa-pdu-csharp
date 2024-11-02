@@ -10,6 +10,10 @@ namespace hakoniwa.environment.impl.local
         public DummyCommunicationService()
         {
         }
+        public string GetServerUri()
+        {
+            return null;
+        }
 
         public bool IsServiceEnabled()
         {

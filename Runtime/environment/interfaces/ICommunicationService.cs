@@ -13,5 +13,7 @@ namespace hakoniwa.environment.interfaces
         bool StopService();
         bool IsServiceEnabled();
         Task<bool> SendData(string robotName, int channelId, byte[] pdu_data);
+
+        string GetServerUri();
     }
 }

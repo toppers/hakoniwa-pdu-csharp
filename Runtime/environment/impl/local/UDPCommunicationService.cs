@@ -17,6 +17,10 @@ namespace hakoniwa.environment.impl.local
         private Task receiveTask;
         private ICommunicationBuffer buffer;
         private bool isServiceEnabled = false;
+        public string GetServerUri()
+        {
+            return null;
+        }
 
         public UDPCommunicationService(int localPort, string remoteAddress, int remotePort)
         {
