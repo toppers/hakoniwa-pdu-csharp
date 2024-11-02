@@ -11,7 +11,8 @@
     },
     "license": "MIT",
     "dependencies": {
-      "com.unity.nuget.newtonsoft-json": "3.0.2"
+      "com.unity.nuget.newtonsoft-json": "3.0.2",
+      "com.endel.nativewebsocket": "https://github.com/endel/NativeWebSocket.git#upm"
       },
     "repository": {
       "type": "git",
