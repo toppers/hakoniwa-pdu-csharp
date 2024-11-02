@@ -1,3 +1,14 @@
 {
-	"name": "HakonwiaPdu"
+    "name": "HakoniwaPdu",
+    "references": [
+        "NativeWebSocket",
+		"Newtonsoft.Json"
+    ],
+    "includePlatforms": [
+        "Editor",
+        "Windows",
+        "OSX",
+        "Linux",
+        "WebGL"
+    ]
 }
