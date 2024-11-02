@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if !NO_USE_UNITY
+using UnityEngine;
 using System.IO;
 using hakoniwa.environment.interfaces;
 
@@ -13,14 +14,14 @@ namespace hakoniwa.environment.impl.unity
         public string LoadText(string filePath, string extension = null)
         {
             // ./や先頭の/を削除した形でfullPathを作成
-            string fullPath = filePath.TrimStart('.', '/');
-
+            string fullPath = filePath.StartsWith("./") ? filePath.Substring(2) : filePath.TrimStart('/');
             TextAsset textAsset = Resources.Load<TextAsset>(fullPath);
             if (textAsset == null)
             {
-                throw new FileNotFoundException($"File '{filePath}' not found in Resources.");
+                throw new FileNotFoundException($"File '{fullPath}' not found in Resources.");
             }
             return textAsset.text;
         }
     }
 }
+#endif
