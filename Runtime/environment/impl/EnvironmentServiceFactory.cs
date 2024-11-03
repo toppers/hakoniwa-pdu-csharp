@@ -9,6 +9,7 @@ using hakoniwa.environment.interfaces;
 using Newtonsoft.Json;
 #endif
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace hakoniwa.environment.impl
 {
@@ -47,6 +48,48 @@ namespace hakoniwa.environment.impl
         public WebSocketConfig WebSocket { get; set; }
 #endif
     }
+    public class ConfigParser
+    {
+        private readonly string jsonText;
+
+        public ConfigParser(string jsonText)
+        {
+            this.jsonText = jsonText;
+        }
+
+        private string GetStringValue(string key)
+        {
+            string pattern = $"\"{key}\"\\s*:\\s*\"([^\"]+)\"";
+            var match = Regex.Match(jsonText, pattern);
+            return match.Success ? match.Groups[1].Value : null;
+        }
+
+        private int GetIntValue(string key)
+        {
+            string pattern = $"\"{key}\"\\s*:\\s*(\\d+)";
+            var match = Regex.Match(jsonText, pattern);
+            return match.Success ? int.Parse(match.Groups[1].Value) : 0;
+        }
+
+        public CommServiceConfig ParseCommServiceConfig()
+        {
+            var config = new CommServiceConfig
+            {
+                Udp = new UdpConfig
+                {
+                    LocalPort = GetIntValue("localPort"),
+                    RemotePort = GetIntValue("remotePort"),
+                    RemoteIPAddress = GetStringValue("remoteIPAddress")
+                },
+                WebSocket = new WebSocketConfig
+                {
+                    ServerURI = GetStringValue("serverURI")
+                }
+            };
+
+            return config;
+        }
+    }
 
     public class EnvironmentServiceFactory
     {
@@ -75,8 +118,12 @@ namespace hakoniwa.environment.impl
             try
             {
 #if UNITY_WEBGL
+                Debug.Log("readed json: " + param);
+                ConfigParser parser = new ConfigParser(param);
+                CommServiceConfig config = parser.ParseCommServiceConfig();
                 // WebGL用のJsonUtilityを使ってデシリアライズ
-                CommServiceConfig config = JsonUtility.FromJson<CommServiceConfig>(param);
+                //CommServiceConfig config = JsonUtility.FromJson<CommServiceConfig>(param);
+                Debug.Log("config.WebSocket.ServerURI: " + config.WebSocket.ServerURI);
 #else
                 // それ以外はNewtonsoft.Jsonを使用
                 CommServiceConfig config = JsonConvert.DeserializeObject<CommServiceConfig>(param);
