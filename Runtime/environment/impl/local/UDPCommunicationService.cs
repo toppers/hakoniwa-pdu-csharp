@@ -28,7 +28,7 @@ namespace hakoniwa.environment.impl.local
             this.remoteAddress = remoteAddress;
             this.remotePort = remotePort;
         }
-        public Task<bool> StartService(ICommunicationBuffer comm_buffer)
+        public Task<bool> StartService(ICommunicationBuffer comm_buffer, string uri = null)
         {
             if (isServiceEnabled)
             {

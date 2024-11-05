@@ -58,13 +58,15 @@ public class WebGLSocketCommunicationService : ICommunicationService, IDisposabl
         }
     }
 
-    async public Task<bool> StartService(ICommunicationBuffer comm_buffer)
+    async public Task<bool> StartService(ICommunicationBuffer comm_buffer, string uri = null)
     {
         if (isServiceEnabled)
         {
             return false;
         }
-
+        if (uri != null) {
+            this.serverUri = uri;
+        }
         buffer = comm_buffer;
         webSocket = new WebSocket(serverUri);
 

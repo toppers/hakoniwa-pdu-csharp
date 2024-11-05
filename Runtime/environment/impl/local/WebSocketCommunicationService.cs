@@ -10,7 +10,7 @@ namespace hakoniwa.environment.impl.local
 {
     public class WebSocketCommunicationService : ICommunicationService
     {
-        private readonly string serverUri;
+        private string serverUri;
         private ClientWebSocket webSocket;
         private CancellationTokenSource cancellationTokenSource;
         private Task receiveTask;
@@ -26,7 +26,7 @@ namespace hakoniwa.environment.impl.local
             this.serverUri = serverUri;
         }
                 
-        public async Task<bool> StartService(ICommunicationBuffer comm_buffer)
+        public async Task<bool> StartService(ICommunicationBuffer comm_buffer, string uri = null)
         {
             if (isServiceEnabled)
             {
@@ -36,6 +36,9 @@ namespace hakoniwa.environment.impl.local
             buffer = comm_buffer;
             webSocket = new ClientWebSocket();
             cancellationTokenSource = new CancellationTokenSource();
+            if (uri != null) {
+                this.serverUri = uri;
+            }
 
 
             try
