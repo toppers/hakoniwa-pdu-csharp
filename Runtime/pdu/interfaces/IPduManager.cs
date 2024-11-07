@@ -7,7 +7,7 @@ namespace hakoniwa.pdu.interfaces
 {
     public interface IPduManager
     {
-        Task<bool> StartService();
+        Task<bool> StartService(string server_uri = null);
         bool StopService();
         IPdu CreatePdu(string robotName, string pduName);
         IPdu CreatePduByType(string pduName, string packageName, string typeName);

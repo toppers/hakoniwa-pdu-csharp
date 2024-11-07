@@ -22,7 +22,7 @@ namespace hakoniwa.pdu.core
             string fullPath = System.IO.Path.Combine(config_path, "custom");
             pdu_channel_config = pdu_channel_loader.Load(fullPath, ".json");
         }
-        public async Task<bool> StartService()
+        public async Task<bool> StartService(string server_uri = null)
         {
             if (service.GetCommunication().IsServiceEnabled())
             {
@@ -32,7 +32,7 @@ namespace hakoniwa.pdu.core
             decoder = new PduDecoder(pdu_definition_loader);
             encoder = new PduEncoder(pdu_definition_loader);
 
-            await service.GetCommunication().StartService(buffers);
+            await service.GetCommunication().StartService(buffers, server_uri);
             return false;
         }
         public bool StopService()
