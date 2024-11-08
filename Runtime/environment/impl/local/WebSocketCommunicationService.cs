@@ -8,7 +8,7 @@ using hakoniwa.environment.interfaces;
 
 namespace hakoniwa.environment.impl.local
 {
-    public class WebSocketCommunicationService : ICommunicationService
+    public class WebSocketCommunicationService : ICommunicationService, IDisposable
     {
         private string serverUri;
         private ClientWebSocket webSocket;
@@ -16,16 +16,18 @@ namespace hakoniwa.environment.impl.local
         private Task receiveTask;
         private ICommunicationBuffer buffer;
         private bool isServiceEnabled = false;
+        private bool disposed = false;
 
         public string GetServerUri()
         {
             return serverUri;
         }
+
         public WebSocketCommunicationService(string serverUri)
         {
             this.serverUri = serverUri;
         }
-                
+
         public async Task<bool> StartService(ICommunicationBuffer comm_buffer, string uri = null)
         {
             if (isServiceEnabled)
@@ -36,10 +38,10 @@ namespace hakoniwa.environment.impl.local
             buffer = comm_buffer;
             webSocket = new ClientWebSocket();
             cancellationTokenSource = new CancellationTokenSource();
-            if (uri != null) {
+            if (uri != null)
+            {
                 this.serverUri = uri;
             }
-
 
             try
             {
@@ -52,12 +54,12 @@ namespace hakoniwa.environment.impl.local
                 isServiceEnabled = false;
                 return false;
             }
+
             // 非同期で受信タスクを開始
             receiveTask = Task.Run(() => ReceiveData(cancellationTokenSource.Token));
             isServiceEnabled = true;
             return true;
         }
-
 
         private async Task ReceiveData(CancellationToken ct)
         {
@@ -69,7 +71,6 @@ namespace hakoniwa.environment.impl.local
                 try
                 {
                     headerResult = await webSocket.ReceiveAsync(new ArraySegment<byte>(headerBuffer), ct);
-                    //Console.WriteLine($"headerResult: {headerResult.Count}");
                 }
                 catch (OperationCanceledException)
                 {
@@ -100,7 +101,6 @@ namespace hakoniwa.environment.impl.local
                         var segment = new ArraySegment<byte>(dataBuffer, 4 + bytesRead, totalLength - bytesRead);
                         WebSocketReceiveResult result = await webSocket.ReceiveAsync(segment, ct);
                         bytesRead += result.Count;
-                        //Console.WriteLine($"bytesRead: {bytesRead} totalLength: {totalLength}");
 
                         if (result.MessageType == WebSocketMessageType.Close)
                         {
@@ -114,12 +114,11 @@ namespace hakoniwa.environment.impl.local
                         break;
                     }
                 }
-                
+
                 if (bytesRead == totalLength)
                 {
                     IDataPacket packet = DataPacket.Decode(dataBuffer);
                     buffer.PutPacket(packet);
-                    //Console.WriteLine("Data received and processed.");
                 }
             }
         }
@@ -128,7 +127,7 @@ namespace hakoniwa.environment.impl.local
         {
             if (!isServiceEnabled || webSocket.State != WebSocketState.Open)
             {
-                Console.WriteLine($"send error: isServiceEnabled={isServiceEnabled} webSocket.State ={webSocket.State }");
+                Console.WriteLine($"send error: isServiceEnabled={isServiceEnabled} webSocket.State ={webSocket.State}");
                 return false;
             }
 
@@ -154,24 +153,26 @@ namespace hakoniwa.environment.impl.local
             }
         }
 
-        public bool StopService()
+        public async Task<bool> StopServiceAsync()
         {
             Console.WriteLine("Stop Service");
             if (!isServiceEnabled)
             {
                 return false;
             }
-
-            if (webSocket.State == WebSocketState.Open)
-            {
-                webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Service stopping", CancellationToken.None).Wait();
-            }
-
-            cancellationTokenSource?.Cancel();
-
             try
             {
-                receiveTask?.Wait();
+                if (webSocket?.State == WebSocketState.Open)
+                {
+                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Service stopping", CancellationToken.None);
+                }
+
+                cancellationTokenSource?.Cancel();
+
+                if (receiveTask != null)
+                {
+                    await receiveTask;
+                }
             }
             catch (AggregateException e)
             {
@@ -190,6 +191,37 @@ namespace hakoniwa.environment.impl.local
         public bool IsServiceEnabled()
         {
             return isServiceEnabled;
+        }
+        public bool StopService()
+        {
+            return StopServiceAsync().GetAwaiter().GetResult();
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                // マネージリソースの解放
+                if (isServiceEnabled)
+                {
+                    StopServiceAsync().Wait();
+                }
+                webSocket?.Dispose();
+                cancellationTokenSource?.Dispose();
+            }
+
+            disposed = true;
         }
     }
 }
