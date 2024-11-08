@@ -42,19 +42,26 @@ namespace hakoniwa.environment.impl.local
             return Task.FromResult(true); ;
         }
 
-        public bool StopService()
+        public async Task<bool> StopService()
         {
             if (!isServiceEnabled)
             {
                 return false;
             }
 
-            cancellationTokenSource?.Cancel();
-            // ソケットを閉じてReceiveAsyncを強制終了させる
-            udpClient?.Client.Close();            
             try
             {
-                receiveTask?.Wait();
+                // キャンセルを発行して受信タスクを終了させる
+                cancellationTokenSource?.Cancel();
+
+                // ソケットを閉じてReceiveAsyncを強制終了させる
+                udpClient?.Client.Close();
+
+                // 受信タスクが終了するのを待つ
+                if (receiveTask != null)
+                {
+                    await receiveTask;
+                }
             }
             catch (AggregateException e)
             {
@@ -66,6 +73,7 @@ namespace hakoniwa.environment.impl.local
                 cancellationTokenSource?.Dispose();
                 isServiceEnabled = false;
             }
+
             return true;
         }
 

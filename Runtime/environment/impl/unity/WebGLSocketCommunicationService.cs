@@ -154,7 +154,7 @@ public class WebGLSocketCommunicationService : ICommunicationService, IDisposabl
         }
     }
 
-    public bool StopService()
+    public async Task<bool> StopService()
     {
         Debug.Log("Stop Service");
         if (!isServiceEnabled)
@@ -173,7 +173,12 @@ public class WebGLSocketCommunicationService : ICommunicationService, IDisposabl
     }
     public void Dispose()
     {
-        StopService();
+        DisposeAsync().Wait();
+    }
+
+    private async Task DisposeAsync()
+    {
+        await StopService();
         webSocket = null;
     }
     public string GetServerUri()

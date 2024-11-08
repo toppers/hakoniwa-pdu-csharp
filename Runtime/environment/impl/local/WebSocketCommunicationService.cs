@@ -153,7 +153,7 @@ namespace hakoniwa.environment.impl.local
             }
         }
 
-        public async Task<bool> StopServiceAsync()
+        public async Task<bool> StopService()
         {
             Console.WriteLine("Stop Service");
             if (!isServiceEnabled)
@@ -192,10 +192,6 @@ namespace hakoniwa.environment.impl.local
         {
             return isServiceEnabled;
         }
-        public bool StopService()
-        {
-            return StopServiceAsync().GetAwaiter().GetResult();
-        }
 
         public void Dispose()
         {
@@ -215,7 +211,7 @@ namespace hakoniwa.environment.impl.local
                 // マネージリソースの解放
                 if (isServiceEnabled)
                 {
-                    StopServiceAsync().Wait();
+                    StopService().Wait();
                 }
                 webSocket?.Dispose();
                 cancellationTokenSource?.Dispose();

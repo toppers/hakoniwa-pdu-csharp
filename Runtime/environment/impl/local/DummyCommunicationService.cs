@@ -37,19 +37,19 @@ namespace hakoniwa.environment.impl.local
         {
             if (isServiceEnabled)
             {
-                return Task.FromResult(false); ;
+                return Task.FromResult(false);
             }
             isServiceEnabled = true;
             return Task.FromResult(true); ;
         }
 
-        public bool StopService()
+        public Task<bool> StopService()
         {
             if (isServiceEnabled)
             {
-                return false;
+                return Task.FromResult(false);
             }
-            return true;
+            return Task.FromResult(true);
         }
     }
 }
