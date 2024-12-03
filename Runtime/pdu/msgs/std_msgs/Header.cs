@@ -15,10 +15,24 @@ namespace hakoniwa.pdu.msgs.std_msgs
         {
             _pdu = pdu;
         }
-
-        public Time Stamp => new Time(_pdu.GetData<IPdu>("stamp"));
-
-        public string FrameId
+        private Time _stamp;
+        public Time stamp
+        {
+            get
+            {
+                if (_stamp == null)
+                {
+                    _stamp = new Time(_pdu.GetData<IPdu>("stamp"));
+                }
+                return _stamp;
+            }
+            set
+            {
+                _stamp = value;
+                _pdu.SetData("stamp", value._pdu);
+            }
+        }
+        public string frame_id
         {
             get => _pdu.GetData<string>("frame_id");
             set => _pdu.SetData("frame_id", value);

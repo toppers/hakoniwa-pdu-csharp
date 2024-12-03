@@ -14,29 +14,25 @@ namespace hakoniwa.pdu.msgs.sensor_msgs
         {
             _pdu = pdu;
         }
-
-        public string Name
+        public string name
         {
             get => _pdu.GetData<string>("name");
             set => _pdu.SetData("name", value);
         }
-
-        public uint Offset
+        public uint offset
         {
             get => _pdu.GetData<uint>("offset");
             set => _pdu.SetData("offset", value);
         }
-
-        public byte Datatype
+        public byte datatype
         {
             get => _pdu.GetData<byte>("datatype");
             set => _pdu.SetData("datatype", value);
         }
-
-        public uint Count
+        public uint count
         {
             get => _pdu.GetData<uint>("count");
             set => _pdu.SetData("count", value);
-        }        
+        }
     }
 }

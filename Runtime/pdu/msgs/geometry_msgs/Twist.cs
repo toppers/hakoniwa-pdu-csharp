@@ -14,10 +14,8 @@ namespace hakoniwa.pdu.msgs.geometry_msgs
         {
             _pdu = pdu;
         }
-
-        // Linear field accessor
         private Vector3 _linear;
-        public Vector3 Linear
+        public Vector3 linear
         {
             get
             {
@@ -27,11 +25,14 @@ namespace hakoniwa.pdu.msgs.geometry_msgs
                 }
                 return _linear;
             }
+            set
+            {
+                _linear = value;
+                _pdu.SetData("linear", value._pdu);
+            }
         }
-
-        // Angular field accessor
         private Vector3 _angular;
-        public Vector3 Angular
+        public Vector3 angular
         {
             get
             {
@@ -40,6 +41,11 @@ namespace hakoniwa.pdu.msgs.geometry_msgs
                     _angular = new Vector3(_pdu.GetData<IPdu>("angular"));
                 }
                 return _angular;
+            }
+            set
+            {
+                _angular = value;
+                _pdu.SetData("angular", value._pdu);
             }
         }
     }

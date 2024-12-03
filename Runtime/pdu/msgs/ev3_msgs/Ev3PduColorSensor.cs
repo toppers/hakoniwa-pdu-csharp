@@ -14,32 +14,27 @@ namespace hakoniwa.pdu.msgs.ev3_msgs
         {
             _pdu = pdu;
         }
-
-        public uint Color
+        public uint color
         {
             get => _pdu.GetData<uint>("color");
             set => _pdu.SetData("color", value);
         }
-
-        public uint Reflect
+        public uint reflect
         {
             get => _pdu.GetData<uint>("reflect");
             set => _pdu.SetData("reflect", value);
         }
-
-        public uint RgbR
+        public uint rgb_r
         {
             get => _pdu.GetData<uint>("rgb_r");
             set => _pdu.SetData("rgb_r", value);
         }
-
-        public uint RgbG
+        public uint rgb_g
         {
             get => _pdu.GetData<uint>("rgb_g");
             set => _pdu.SetData("rgb_g", value);
         }
-
-        public uint RgbB
+        public uint rgb_b
         {
             get => _pdu.GetData<uint>("rgb_b");
             set => _pdu.SetData("rgb_b", value);

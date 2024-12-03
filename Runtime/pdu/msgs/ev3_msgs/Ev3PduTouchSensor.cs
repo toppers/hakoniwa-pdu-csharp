@@ -14,8 +14,7 @@ namespace hakoniwa.pdu.msgs.ev3_msgs
         {
             _pdu = pdu;
         }
-
-        public uint Value
+        public uint value
         {
             get => _pdu.GetData<uint>("value");
             set => _pdu.SetData("value", value);

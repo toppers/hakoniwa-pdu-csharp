@@ -14,11 +14,30 @@ namespace hakoniwa.pdu.msgs.ev3_msgs
         {
             _pdu = pdu;
         }
-
-        public uint Timestamp
+        public string name
         {
-            get => _pdu.GetData<uint>("timestamp");
-            set => _pdu.SetData("timestamp", value);
-        }        
+            get => _pdu.GetData<string>("name");
+            set => _pdu.SetData("name", value);
+        }
+        public uint version
+        {
+            get => _pdu.GetData<uint>("version");
+            set => _pdu.SetData("version", value);
+        }
+        public long hakoniwa_time
+        {
+            get => _pdu.GetData<long>("hakoniwa_time");
+            set => _pdu.SetData("hakoniwa_time", value);
+        }
+        public uint ext_off
+        {
+            get => _pdu.GetData<uint>("ext_off");
+            set => _pdu.SetData("ext_off", value);
+        }
+        public uint ext_size
+        {
+            get => _pdu.GetData<uint>("ext_size");
+            set => _pdu.SetData("ext_size", value);
+        }
     }
 }

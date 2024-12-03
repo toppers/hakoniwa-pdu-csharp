@@ -35,20 +35,20 @@ public class UnitTest
         Twist twist = new Twist(pdu);
 
         //double x_val = pdu.GetData<IPdu>("linear").GetData<double>("x");
-        double x_val = twist.Linear.X;
+        double x_val = twist.linear.x;
         Assert.Equal(0, x_val);
 
         //double z_val = pdu.GetData<IPdu>("angular").GetData<double>("z");
-        double z_val = twist.Angular.Z;
+        double z_val = twist.angular.z;
         Assert.Equal(0, z_val);
 
         /*
          * Write Test.
          */
         //pdu.GetData<IPdu>("linear").SetData<double>("x", 1.0);
-        twist.Linear.X = 1.0;
+        twist.linear.x = 1.0;
         //pdu.GetData<IPdu>("angular").SetData<double>("z", -1.0);
-        twist.Angular.Z = -1.0;
+        twist.angular.z = -1.0;
         mgr.WritePdu(robotName, pdu);
 
         /*
@@ -60,11 +60,11 @@ public class UnitTest
         Twist rtwist = new Twist(rpdu);
 
         //double r_x_val = rpdu.GetData<IPdu>("linear").GetData<double>("x");
-        double r_x_val = rtwist.Linear.X;
+        double r_x_val = rtwist.linear.x;
         Assert.Equal(1.0, r_x_val);
 
         //double r_z_val = rpdu.GetData<IPdu>("angular").GetData<double>("z");
-        double r_z_val = rtwist.Angular.Z;
+        double r_z_val = rtwist.angular.z;
         Assert.Equal(-1.0, r_z_val);
 
         mgr.StopService();
@@ -93,7 +93,7 @@ public class UnitTest
         //IPdu image_pdu = pdu.GetData<IPdu>("image");
         //Assert.NotNull(image_pdu);
 
-        byte[] images = camera.Image.Data;
+        byte[] images = camera.image.data;
         //byte[] images = image_pdu.GetDataArray<byte>("data");
         Assert.Equal(0, images[0]);
 
@@ -104,10 +104,10 @@ public class UnitTest
         images[0] = (byte)'a';
         images[127] = (byte)'b';
         //image_pdu.SetData<byte>("data", images);
-        camera.Image.Data = images;
+        camera.image.data = images;
 
         //byte[] test_images = pdu.GetData<IPdu>("image").GetDataArray<byte>("data");
-        byte[] test_images = camera.Image.Data;
+        byte[] test_images = camera.image.data;
         Assert.Equal((byte)'a', test_images[0]);
         Assert.Equal((byte)'b', test_images[127]);
         mgr.WritePdu(robotName, pdu);
@@ -120,7 +120,7 @@ public class UnitTest
         HakoCameraData rcamera = new HakoCameraData(rpdu);
 
         //byte[] rimages = rpdu.GetData<IPdu>("image").GetDataArray<byte>("data");
-        byte[] rimages = rcamera.Image.Data;
+        byte[] rimages = rcamera.image.data;
         Assert.Equal(128, rimages.Length);
         Assert.Equal((byte)'a', rimages[0]);
         Assert.Equal((byte)'b', rimages[127]);
@@ -149,7 +149,7 @@ public class UnitTest
         PointCloud2 pointCloud = new PointCloud2(pdu);
 
         // 初期のFieldsの確認
-        Assert.Empty(pointCloud.Fields);
+        Assert.Empty(pointCloud.fields);
 
         /*
          * Write Test.
@@ -158,12 +158,12 @@ public class UnitTest
         for (int i = 0; i < pointFields.Length; i++)
         {
             PointField field = new PointField(mgr.CreatePduByType("fields", "sensor_msgs", "PointField"));
-            field.Offset = (uint)(i + 100);
+            field.offset = (uint)(i + 100);
             pointFields[i] = field;
         }
-        pointCloud.Fields = pointFields;
+        pointCloud.fields = pointFields;
 
-        Assert.Equal(2, pointCloud.Fields.Length);
+        Assert.Equal(2, pointCloud.fields.Length);
 
         mgr.WritePdu(robotName, pdu);
 
@@ -173,8 +173,8 @@ public class UnitTest
         IPdu rpdu = mgr.ReadPdu(robotName, pduName);
         PointCloud2 readPointCloud = new PointCloud2(rpdu);
 
-        Assert.Equal(100u, readPointCloud.Fields[0].Offset);
-        Assert.Equal(101u, readPointCloud.Fields[1].Offset);
+        Assert.Equal(100u, readPointCloud.fields[0].offset);
+        Assert.Equal(101u, readPointCloud.fields[1].offset);
 
         mgr.StopService();
     }
@@ -199,26 +199,26 @@ public class UnitTest
 
         Ev3PduSensor sensor = new Ev3PduSensor(pdu);
 
-        Assert.Equal(2, sensor.ColorSensors.Length);
-        Assert.Equal(2, sensor.TouchSensors.Length);
-        Assert.Equal(3, sensor.MotorAngle.Length);
+        Assert.Equal(2, sensor.color_sensors.Length);
+        Assert.Equal(2, sensor.touch_sensors.Length);
+        Assert.Equal(3, sensor.motor_angle.Length);
 
         /*
          * Write Test.
          */
-        sensor.ColorSensors[0].RgbR = 99;
-        sensor.ColorSensors[1].RgbR = 101;
-        sensor.TouchSensors[0].Value = 9;
-        sensor.TouchSensors[1].Value = 8;
-        sensor.MotorAngle = new uint[] { 1, 2, 3 };
+        sensor.color_sensors[0].rgb_r = 99;
+        sensor.color_sensors[1].rgb_r = 101;
+        sensor.touch_sensors[0].value = 9;
+        sensor.touch_sensors[1].value = 8;
+        sensor.motor_angle = new uint[] { 1, 2, 3 };
 
-        Assert.Equal(99u, sensor.ColorSensors[0].RgbR);
-        Assert.Equal(101u, sensor.ColorSensors[1].RgbR);
-        Assert.Equal(9u, sensor.TouchSensors[0].Value);
-        Assert.Equal(8u, sensor.TouchSensors[1].Value);
-        Assert.Equal(1u, sensor.MotorAngle[0]);
-        Assert.Equal(2u, sensor.MotorAngle[1]);
-        Assert.Equal(3u, sensor.MotorAngle[2]);
+        Assert.Equal(99u, sensor.color_sensors[0].rgb_r);
+        Assert.Equal(101u, sensor.color_sensors[1].rgb_r);
+        Assert.Equal(9u, sensor.touch_sensors[0].value);
+        Assert.Equal(8u, sensor.touch_sensors[1].value);
+        Assert.Equal(1u, sensor.motor_angle[0]);
+        Assert.Equal(2u, sensor.motor_angle[1]);
+        Assert.Equal(3u, sensor.motor_angle[2]);
 
         mgr.WritePdu(robotName, pdu);
 
@@ -228,13 +228,13 @@ public class UnitTest
         IPdu rpdu = mgr.ReadPdu(robotName, pduName);
         Ev3PduSensor readSensor = new Ev3PduSensor(rpdu);
 
-        Assert.Equal(99u, readSensor.ColorSensors[0].RgbR);
-        Assert.Equal(101u, readSensor.ColorSensors[1].RgbR);
-        Assert.Equal(9u, readSensor.TouchSensors[0].Value);
-        Assert.Equal(8u, readSensor.TouchSensors[1].Value);
-        Assert.Equal(1u, readSensor.MotorAngle[0]);
-        Assert.Equal(2u, readSensor.MotorAngle[1]);
-        Assert.Equal(3u, readSensor.MotorAngle[2]);
+        Assert.Equal(99u, readSensor.color_sensors[0].rgb_r);
+        Assert.Equal(101u, readSensor.color_sensors[1].rgb_r);
+        Assert.Equal(9u, readSensor.touch_sensors[0].value);
+        Assert.Equal(8u, readSensor.touch_sensors[1].value);
+        Assert.Equal(1u, readSensor.motor_angle[0]);
+        Assert.Equal(2u, readSensor.motor_angle[1]);
+        Assert.Equal(3u, readSensor.motor_angle[2]);
 
         mgr.StopService();
     }

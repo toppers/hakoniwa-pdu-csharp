@@ -14,14 +14,12 @@ namespace hakoniwa.pdu.msgs.builtin_interfaces
         {
             _pdu = pdu;
         }
-
-        public int Sec
+        public int sec
         {
             get => _pdu.GetData<int>("sec");
             set => _pdu.SetData("sec", value);
         }
-
-        public uint Nanosec
+        public uint nanosec
         {
             get => _pdu.GetData<uint>("nanosec");
             set => _pdu.SetData("nanosec", value);

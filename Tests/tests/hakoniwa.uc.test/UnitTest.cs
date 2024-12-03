@@ -104,11 +104,11 @@ public class UnitTest
 
         Twist twist = new Twist(pdu);
         //double x_val = pdu.GetData<IPdu>("linear").GetData<double>("x");
-        double x_val = twist.Linear.X;
+        double x_val = twist.linear.x;
         Assert.Equal(0, x_val);
 
         //double z_val = pdu.GetData<IPdu>("angular").GetData<double>("z");
-        double z_val = twist.Angular.Z;
+        double z_val = twist.angular.z;
         Assert.Equal(0, z_val);
 
         /*
@@ -116,8 +116,8 @@ public class UnitTest
          */
         //pdu.GetData<IPdu>("linear").SetData<double>("x", 1.0);
         //pdu.GetData<IPdu>("angular").SetData<double>("z", -1.0);
-        twist.Linear.X = 1.0;
-        twist.Angular.Z = -1.0;
+        twist.linear.x = 1.0;
+        twist.angular.z = -1.0;
         var key = mgr.WritePdu(robotName, pdu);
 
         await mgr.FlushPdu(robotName, pduName);
@@ -135,11 +135,11 @@ public class UnitTest
 
         Twist rtwist = new Twist(rpdu);
         //double r_x_val = rpdu.GetData<IPdu>("linear").GetData<double>("x");
-        double r_x_val = rtwist.Linear.X;
+        double r_x_val = rtwist.linear.x;
         Assert.Equal(1.0, r_x_val);
 
         //double r_z_val = rpdu.GetData<IPdu>("angular").GetData<double>("z");
-        double r_z_val = rtwist.Angular.Z;
+        double r_z_val = rtwist.angular.z;
         Assert.Equal(-1.0, r_z_val);
 
         rpdu = mgr.ReadPdu(robotName, pduName);

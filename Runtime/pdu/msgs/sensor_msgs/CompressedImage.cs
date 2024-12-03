@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using hakoniwa.pdu.interfaces;
+using hakoniwa.pdu.msgs.builtin_interfaces;
 using hakoniwa.pdu.msgs.std_msgs;
 
 namespace hakoniwa.pdu.msgs.sensor_msgs
@@ -15,9 +16,8 @@ namespace hakoniwa.pdu.msgs.sensor_msgs
         {
             _pdu = pdu;
         }
-
         private Header _header;
-        public Header Header
+        public Header header
         {
             get
             {
@@ -27,15 +27,18 @@ namespace hakoniwa.pdu.msgs.sensor_msgs
                 }
                 return _header;
             }
+            set
+            {
+                _header = value;
+                _pdu.SetData("header", value._pdu);
+            }
         }
-
-        public string Format
+        public string format
         {
             get => _pdu.GetData<string>("format");
             set => _pdu.SetData("format", value);
         }
-
-        public byte[] Data
+        public byte[] data
         {
             get => _pdu.GetDataArray<byte>("data");
             set => _pdu.SetData("data", value);

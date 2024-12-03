@@ -14,20 +14,17 @@ namespace hakoniwa.pdu.msgs.geometry_msgs
         {
             _pdu = pdu;
         }
-
-        public double X
+        public double x
         {
             get => _pdu.GetData<double>("x");
             set => _pdu.SetData("x", value);
         }
-
-        public double Y
+        public double y
         {
             get => _pdu.GetData<double>("y");
             set => _pdu.SetData("y", value);
         }
-
-        public double Z
+        public double z
         {
             get => _pdu.GetData<double>("z");
             set => _pdu.SetData("z", value);
