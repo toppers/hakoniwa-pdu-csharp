@@ -10,6 +10,7 @@ using hakoniwa.environment.impl;
 using hakoniwa.environment.interfaces;
 using hakoniwa.pdu.interfaces;
 using hakoniwa.pdu.core;
+using hakoniwa.pdu.msgs.geometry_msgs;
 
 public class WebSocketCommunicationServiceTest
 {
@@ -101,17 +102,22 @@ public class UnitTest
         IPdu pdu = mgr.CreatePdu(robotName, pduName);
         Assert.NotNull(pdu);
 
-        double x_val = pdu.GetData<IPdu>("linear").GetData<double>("x");
+        Twist twist = new Twist(pdu);
+        //double x_val = pdu.GetData<IPdu>("linear").GetData<double>("x");
+        double x_val = twist.Linear.X;
         Assert.Equal(0, x_val);
 
-        double z_val = pdu.GetData<IPdu>("angular").GetData<double>("z");
+        //double z_val = pdu.GetData<IPdu>("angular").GetData<double>("z");
+        double z_val = twist.Angular.Z;
         Assert.Equal(0, z_val);
 
         /*
          * Write Test.
          */
-        pdu.GetData<IPdu>("linear").SetData<double>("x", 1.0);
-        pdu.GetData<IPdu>("angular").SetData<double>("z", -1.0);
+        //pdu.GetData<IPdu>("linear").SetData<double>("x", 1.0);
+        //pdu.GetData<IPdu>("angular").SetData<double>("z", -1.0);
+        twist.Linear.X = 1.0;
+        twist.Angular.Z = -1.0;
         var key = mgr.WritePdu(robotName, pdu);
 
         await mgr.FlushPdu(robotName, pduName);
@@ -127,10 +133,13 @@ public class UnitTest
         IPdu rpdu = mgr.ReadPdu(robotName, pduName);
         Assert.NotNull(rpdu);
 
-        double r_x_val = rpdu.GetData<IPdu>("linear").GetData<double>("x");
+        Twist rtwist = new Twist(rpdu);
+        //double r_x_val = rpdu.GetData<IPdu>("linear").GetData<double>("x");
+        double r_x_val = rtwist.Linear.X;
         Assert.Equal(1.0, r_x_val);
 
-        double r_z_val = rpdu.GetData<IPdu>("angular").GetData<double>("z");
+        //double r_z_val = rpdu.GetData<IPdu>("angular").GetData<double>("z");
+        double r_z_val = rtwist.Angular.Z;
         Assert.Equal(-1.0, r_z_val);
 
         rpdu = mgr.ReadPdu(robotName, pduName);

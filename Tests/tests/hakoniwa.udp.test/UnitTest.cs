@@ -55,9 +55,9 @@ namespace hakoniwa.environment.test
 
             // サービスの停止
             Console.WriteLine("INFO: Stop Sender service");
-            senderService.StopService();
+            await senderService.StopService();
             Console.WriteLine("INFO: Stop Recv service");
-            receiverService.StopService();
+            await receiverService.StopService();
             Console.WriteLine("INFO: DONE");
         }
     }

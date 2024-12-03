@@ -106,7 +106,7 @@ namespace hakoniwa.environment.test
             Assert.Equal(sendData, receivedPacket.GetPduData());
 
             // WebSocketサービスとサーバーを停止
-            webSocketService.StopService();
+            await webSocketService.StopService();
             StopWebSocketServer();
         }
 
