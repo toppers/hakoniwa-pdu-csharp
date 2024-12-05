@@ -22,6 +22,14 @@ namespace hakoniwa.pdu.core
             string fullPath = System.IO.Path.Combine(config_path, "custom");
             pdu_channel_config = pdu_channel_loader.Load(fullPath, ".json");
         }
+        public int GetChannelId(string robotName, string pduName)
+        {
+            return pdu_channel_config.GetChannelId(robotName, pduName);
+        }
+        public int GetPduSize(string robotName, string pduName)
+        {
+            return pdu_channel_config.GetPduSize(robotName, pduName);
+        }
         public async Task<bool> StartService(string server_uri = null)
         {
             if (service.GetCommunication().IsServiceEnabled())

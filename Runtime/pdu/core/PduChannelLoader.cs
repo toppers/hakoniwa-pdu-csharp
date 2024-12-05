@@ -96,8 +96,31 @@ namespace hakoniwa.pdu.core
             }
             return -1;
         }
+        public int GetPduSize(string robotName, string pduName)
+        {
+            foreach (var robot in robots)
+            {
+                if (robot.name == robotName)
+                {
+                    foreach (var reader in robot.shm_pdu_readers)
+                    {
+                        if (reader.org_name == pduName)
+                        {
+                            return reader.pdu_size;
+                        }
+                    }
+                    foreach (var writer in robot.shm_pdu_writers)
+                    {
+                        if (writer.org_name == pduName)
+                        {
+                            return writer.pdu_size;
+                        }
+                    }
+                }
+            }
+            return -1;
+        }        
     }
-
     [System.Serializable]
     public class RobotConfig
     {

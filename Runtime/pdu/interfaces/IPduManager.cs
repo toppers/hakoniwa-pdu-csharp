@@ -15,6 +15,7 @@ namespace hakoniwa.pdu.interfaces
         Task<bool> FlushPdu(string robotName, string pduName);
         IPdu ReadPdu(string robotName, string pduName);
         string GetKey(string robotName, string pduName);
-
+        int GetChannelId(string robotName, string pduName);
+        int GetPduSize(string robotName, string pduName);
     }
 }
