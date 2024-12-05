@@ -63,5 +63,15 @@ namespace hakoniwa.pdu.core
                 this.SetBuffer(key, packet.GetPduData());
             }
         }
+        public void PutPacket(string robotName, int channelId, byte[] pdu_data)
+        {
+            string pduName = this.channel_config.GetPduName(robotName, channelId);
+            if (pduName != null)
+            {
+                string key = robotName + "_" + pduName;
+                //Console.WriteLine($"put packet: {key}");
+                this.SetBuffer(key, pdu_data);
+            }
+        }
     }
 }

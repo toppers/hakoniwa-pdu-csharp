@@ -71,6 +71,10 @@ namespace hakoniwa.environment.test
         {
             latestPacket = packet;
         }
+        public void PutPacket(string robotName, int channelId, byte[] pdu_data)
+        {
+            throw new NotImplementedException();
+        }
 
         public IDataPacket? GetLatestPacket()
         {
