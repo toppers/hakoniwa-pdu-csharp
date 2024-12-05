@@ -32,8 +32,8 @@ namespace hakoniwa.pdu.core
             decoder = new PduDecoder(pdu_definition_loader);
             encoder = new PduEncoder(pdu_definition_loader);
 
-            await service.GetCommunication().StartService(buffers, server_uri);
-            return false;
+            var ret = await service.GetCommunication().StartService(buffers, server_uri);
+            return ret;
         }
         public bool StopService()
         {
