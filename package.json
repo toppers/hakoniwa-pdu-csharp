@@ -1,7 +1,7 @@
 {
     "name": "com.hakoniwa-lab.hakoniwa-pdu",
     "version": "1.0.0",
-    "displayName": "Hakoniwa PDU(Protocol Data Unit)",
+    "displayName": "Hakoniwa PDU",
     "description": "This package provides a Hakoniwa PDU management system for Unity.",
     "unity": "2022.3",
     "author": {
