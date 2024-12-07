@@ -99,10 +99,10 @@ public class UnitTest
         /*
          * Create Test.
          */
-        IPdu pdu = mgr.CreatePdu(robotName, pduName);
-        Assert.NotNull(pdu);
+        INamedPdu npdu = mgr.CreateNamedPdu(robotName, pduName);
+        Assert.NotNull(npdu);
 
-        Twist twist = new Twist(pdu);
+        Twist twist = new Twist(npdu.Pdu);
         //double x_val = pdu.GetData<IPdu>("linear").GetData<double>("x");
         double x_val = twist.linear.x;
         Assert.Equal(0, x_val);
@@ -118,10 +118,11 @@ public class UnitTest
         //pdu.GetData<IPdu>("angular").SetData<double>("z", -1.0);
         twist.linear.x = 1.0;
         twist.angular.z = -1.0;
-        var key = mgr.WritePdu(robotName, pdu);
+        var key = mgr.WriteNamedPdu(npdu);
 
         //await mgr.FlushPdu(robotName, pduName);
-        await mgr.FlushPdu(key);
+        //await mgr.FlushPdu(key);
+        await mgr.FlushNamedPdu(npdu);
 
         IPdu tmp = mgr.ReadPdu(robotName, pduName);
         Assert.Null(tmp);

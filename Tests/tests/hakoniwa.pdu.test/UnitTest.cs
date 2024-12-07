@@ -194,10 +194,10 @@ public class UnitTest
         /*
          * Create Test.
          */
-        IPdu pdu = mgr.CreatePdu(robotName, pduName);
-        Assert.NotNull(pdu);
+        INamedPdu npdu = mgr.CreateNamedPdu(robotName, pduName);
+        Assert.NotNull(npdu);
 
-        Ev3PduSensor sensor = new Ev3PduSensor(pdu);
+        Ev3PduSensor sensor = new Ev3PduSensor(npdu.Pdu);
 
         Assert.Equal(2, sensor.color_sensors.Length);
         Assert.Equal(2, sensor.touch_sensors.Length);
@@ -220,7 +220,7 @@ public class UnitTest
         Assert.Equal(2u, sensor.motor_angle[1]);
         Assert.Equal(3u, sensor.motor_angle[2]);
 
-        mgr.WritePdu(robotName, pdu);
+        mgr.WriteNamedPdu(npdu);
 
         /*
          * Read Test.

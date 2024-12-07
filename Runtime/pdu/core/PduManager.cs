@@ -194,5 +194,21 @@ namespace hakoniwa.pdu.core
             packageName = parts[0];
             typeName = parts[1];
         }
+
+        public INamedPdu CreateNamedPdu(string robotName, string pduName)
+        {
+            var pdu = CreatePdu(robotName, pduName);
+            return new NamedPdu(robotName, pdu);
+        }
+
+        public string WriteNamedPdu(INamedPdu npdu)
+        {
+            return WritePdu(npdu.RobtName, npdu.Pdu);
+        }
+
+        public Task<bool> FlushNamedPdu(INamedPdu npdu)
+        {
+            return FlushPdu(npdu.RobtName, npdu.Pdu.Name);
+        }
     }
 }
