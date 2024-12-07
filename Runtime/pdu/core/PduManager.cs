@@ -107,9 +107,30 @@ namespace hakoniwa.pdu.core
 
             byte[] encodedData = encoder.Encode(pdu as Pdu);
             //Console.WriteLine($"encodedData Len: {encodedData.Length}");
-            string key = GetKey(robotName, pdu.Name);
+            string key = buffers.GetKey(robotName, pdu.Name);
             buffers.SetBuffer(key, encodedData);
             return key;
+        }
+        public async Task<bool> FlushPdu(string key)
+        {
+            if (!service.GetCommunication().IsServiceEnabled())
+            {
+                return false;
+            }
+            byte[] pdu_raw_data = buffers.GetBuffer(key);
+            if (pdu_raw_data == null)
+            {
+                return false;
+            }
+            buffers.Key2RobotPdu(key, out string robotName, out string pduName);
+            Console.WriteLine($"FlushPdu: {robotName}/{pduName}");
+            int channel_id = pdu_channel_config.GetChannelId(robotName, pduName);
+            if (channel_id < 0)
+            {
+                throw new ArgumentException($"PDU channel ID not found for {key}");
+            }
+            await service.GetCommunication().SendData(robotName, channel_id, pdu_raw_data);
+            return true;
         }
         public async Task<bool> FlushPdu(string robotName, string pduName)
         {
@@ -117,7 +138,7 @@ namespace hakoniwa.pdu.core
             {
                 return false;
             }
-            string key = GetKey(robotName, pduName);
+            string key = buffers.GetKey(robotName, pduName);
             byte[] pdu_raw_data = buffers.GetBuffer(key);
             if (pdu_raw_data == null)
             {
@@ -139,7 +160,7 @@ namespace hakoniwa.pdu.core
                 return null;
             }
 
-            string key = GetKey(robotName, pduName);
+            string key = buffers.GetKey(robotName, pduName);
             byte[] raw_data = buffers.GetBuffer(key);
             if (raw_data == null)
             {
@@ -151,10 +172,6 @@ namespace hakoniwa.pdu.core
             GetPackageTypeName(robotName, pduName, out packageName, out typeName);
 
             return decoder.Decode(pduName, packageName, typeName, raw_data);
-        }
-        public string GetKey(string robotName, string pduName)
-        {
-            return robotName + "_" + pduName;
         }
         // robotNameとpduNameからpackageNameとtypeNameを抽出するメソッド
         private void GetPackageTypeName(string robotName, string pduName, out string packageName, out string typeName)

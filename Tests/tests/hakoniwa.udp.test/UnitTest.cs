@@ -66,6 +66,20 @@ namespace hakoniwa.environment.test
     public class CommunicationBufferMock : ICommunicationBuffer
     {
         private IDataPacket? latestPacket;
+        public string GetKey(string robotName, string pduName)
+        {
+            return robotName + "&" + pduName;
+        }
+        public void Key2RobotPdu(string key, out string robotName, out string pduName)
+        {
+            string[] tokens = key.Split('&');
+            if (tokens.Length != 2)
+            {
+                throw new ArgumentException("Invalid key format");
+            }
+            robotName = tokens[0];
+            pduName = tokens[1];
+        }
 
         public void PutPacket(IDataPacket packet)
         {

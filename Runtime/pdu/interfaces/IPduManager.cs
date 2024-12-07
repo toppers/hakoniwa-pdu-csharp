@@ -12,9 +12,9 @@ namespace hakoniwa.pdu.interfaces
         IPdu CreatePdu(string robotName, string pduName);
         IPdu CreatePduByType(string pduName, string packageName, string typeName);
         string WritePdu(string robotName, IPdu pdu);
+        Task<bool> FlushPdu(string key);
         Task<bool> FlushPdu(string robotName, string pduName);
         IPdu ReadPdu(string robotName, string pduName);
-        string GetKey(string robotName, string pduName);
         int GetChannelId(string robotName, string pduName);
         int GetPduSize(string robotName, string pduName);
     }

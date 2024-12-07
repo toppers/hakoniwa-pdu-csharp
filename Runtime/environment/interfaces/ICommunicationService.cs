@@ -7,6 +7,8 @@ namespace hakoniwa.environment.interfaces
     {
         void PutPacket(IDataPacket packet);
         void PutPacket(string robotName, int channelId, byte[] pdu_data);
+        string GetKey(string robotName, string pduName);
+        void Key2RobotPdu(string key, out string robotName, out string pduName);
     }
     public interface ICommunicationService
     {

@@ -120,7 +120,8 @@ public class UnitTest
         twist.angular.z = -1.0;
         var key = mgr.WritePdu(robotName, pdu);
 
-        await mgr.FlushPdu(robotName, pduName);
+        //await mgr.FlushPdu(robotName, pduName);
+        await mgr.FlushPdu(key);
 
         IPdu tmp = mgr.ReadPdu(robotName, pduName);
         Assert.Null(tmp);

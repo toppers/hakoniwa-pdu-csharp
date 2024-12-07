@@ -10,6 +10,25 @@ namespace hakoniwa.pdu.core
         private readonly object lockObj = new object();
         private PduChannelConfig channel_config;
 
+        private const char Separator = '\u001F';
+
+        public string GetKey(string robotName, string pduName)
+        {
+            return robotName + Separator + pduName;
+        }
+
+        public void Key2RobotPdu(string key, out string robotName, out string pduName)
+        {
+            string[] tokens = key.Split(Separator);
+            if (tokens.Length != 2)
+            {
+                throw new ArgumentException($"Invalid key format: {key}");
+            }
+            robotName = tokens[0];
+            pduName = tokens[1];
+        }
+
+
         public PduBuffer(PduChannelConfig pdu_channel_config)
         {
             pduBuffer = new Dictionary<string, byte[]>();
@@ -58,7 +77,8 @@ namespace hakoniwa.pdu.core
             string pduName = this.channel_config.GetPduName(packet.GetRobotName(), packet.GetChannelId());
             if (pduName != null)
             {
-                string key = packet.GetRobotName() + "_" + pduName;
+                //string key = packet.GetRobotName() + "_" + pduName;
+                string key = GetKey(packet.GetRobotName(), pduName);
                 //Console.WriteLine($"put packet: {key}");
                 this.SetBuffer(key, packet.GetPduData());
             }
@@ -68,7 +88,8 @@ namespace hakoniwa.pdu.core
             string pduName = this.channel_config.GetPduName(robotName, channelId);
             if (pduName != null)
             {
-                string key = robotName + "_" + pduName;
+                //string key = robotName + "_" + pduName;
+                string key = GetKey(robotName, pduName);
                 //Console.WriteLine($"put packet: {key}");
                 this.SetBuffer(key, pdu_data);
             }
