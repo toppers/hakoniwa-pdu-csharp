@@ -14,3 +14,12 @@ A pure C# package implementing Hakoniwa PDU (Protocol Data Unit) for seamless co
     "com.endel.nativewebsocket": "https://github.com/endel/NativeWebSocket.git#upm",
     "com.hakoniwa-lab.hakoniwa-pdu": "https://github.com/toppers/hakoniwa-pdu-csharp.git#main",
 ```
+
+
+## 補足
+
+WebGL向けには、以下をインストールする必要があります。
+
+```json
+"com.endel.nativewebsocket": "https://github.com/endel/NativeWebSocket.git#upm"
+```
