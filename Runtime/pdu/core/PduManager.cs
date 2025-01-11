@@ -43,6 +43,10 @@ namespace hakoniwa.pdu.core
             var ret = await service.GetCommunication().StartService(buffers, server_uri);
             return ret;
         }
+        public bool IsServiceEnabled()
+        {
+            return service.GetCommunication().IsServiceEnabled();
+        }
         public bool StopService()
         {
             if (!service.GetCommunication().IsServiceEnabled())
