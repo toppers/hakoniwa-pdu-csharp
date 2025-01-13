@@ -22,6 +22,35 @@ namespace hakoniwa.pdu.core
             string fullPath = System.IO.Path.Combine(config_path, "custom");
             pdu_channel_config = pdu_channel_loader.Load(fullPath, ".json");
         }
+        private async Task<bool> DeclarePdu(string robotName, string pduName, uint magicNumber)
+        {
+            var communication = service.GetCommunication();
+            if (!communication.IsServiceEnabled())
+            {
+                return false;
+            }
+
+            int channel_id = pdu_channel_config.GetChannelId(robotName, pduName);
+            if (channel_id < 0)
+            {
+                throw new ArgumentException($"PDU channel ID not found for {robotName}/{pduName}");
+            }
+
+            byte[] pdu_raw_data = BitConverter.GetBytes(magicNumber);
+            await communication.SendData(robotName, channel_id, pdu_raw_data);
+            return true;
+        }
+
+        public Task<bool> DeclarePduForRead(string robotName, string pduName)
+        {
+            return DeclarePdu(robotName, pduName, PduMagicNumbers.DeclarePduForRead);
+        }
+
+        public Task<bool> DeclarePduForWrite(string robotName, string pduName)
+        {
+            return DeclarePdu(robotName, pduName, PduMagicNumbers.DeclarePduForWrite);
+        }
+        
         public int GetChannelId(string robotName, string pduName)
         {
             return pdu_channel_config.GetChannelId(robotName, pduName);

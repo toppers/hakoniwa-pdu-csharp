@@ -10,6 +10,10 @@ namespace hakoniwa.pdu.interfaces
         Task<bool> StartService(string server_uri = null);
         bool StopService();
         bool IsServiceEnabled();
+
+        public Task<bool> DeclarePduForRead(string robotName, string pduName);
+        public Task<bool> DeclarePduForWrite(string robotName, string pduName);
+
         IPdu CreatePdu(string robotName, string pduName);
         IPdu CreatePduByType(string pduName, string packageName, string typeName);
         string WritePdu(string robotName, IPdu pdu);
