@@ -1,3 +1,4 @@
+#if !NO_USE_UNITY
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -60,3 +61,4 @@ namespace hakoniwa.pdu
         }
     }
 }
+#endif
