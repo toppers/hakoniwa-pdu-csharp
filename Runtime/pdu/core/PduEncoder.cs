@@ -317,8 +317,17 @@ namespace hakoniwa.pdu.core
                     break;
                 case "string":
                     tmp_bytes = new byte[elm.ByteMemberDataTypeSize];
-                    var str_bytes = System.Text.Encoding.ASCII.GetBytes(src.GetData<string>(elm.MemberName));
-                    Array.Copy(str_bytes, tmp_bytes, str_bytes.Length);
+                    var str_data = src.GetData<string>(elm.MemberName);
+                    
+                    if (str_data != null)
+                    {
+                        var str_bytes = System.Text.Encoding.ASCII.GetBytes(str_data);
+                        int copy_length = Math.Min(str_bytes.Length, tmp_bytes.Length - 1); // 末尾のnull文字分を確保
+                        Array.Copy(str_bytes, tmp_bytes, copy_length);
+                        tmp_bytes[copy_length] = 0; // 明示的にnull終端を追加
+                    }
+
+                    //Debug.Log($"tmp_len = {tmp_bytes.Length} str_len = {str_data?.Length ?? 0} {elm.MemberName} string value: {str_data}");
                     break;
                 default:
                     throw new InvalidCastException("Error: Can not found ptype: " + elm.DataTypeName);
