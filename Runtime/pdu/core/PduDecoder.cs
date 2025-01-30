@@ -132,11 +132,22 @@ namespace hakoniwa.pdu.core
                     dst.SetData(elm.MemberName, BitConverter.ToBoolean(src_buffer, off));
                     break;
                 case "string":
-                    int nullIndex = Array.IndexOf(src_buffer, (byte)0);
-                    var bytes = new byte[nullIndex];
-                    Buffer.BlockCopy(src_buffer, off, bytes, 0, bytes.Length);
-                    dst.SetData(elm.MemberName,
-                        System.Text.Encoding.ASCII.GetString(bytes));
+                    // オフセット `off` 以降で null 終端文字 (`\0`) を探す
+                    int nullIndex = Array.IndexOf(src_buffer, (byte)0, off);
+                    if (nullIndex < 0)
+                    {
+                        throw new System.Exception($"Invalid string length detected for {elm.MemberName}");
+                    }
+
+                    // `\0` が見つからない場合、全体の長さを使用
+                    int length = (nullIndex - off);
+                    var bytes = new byte[length];
+                    Buffer.BlockCopy(src_buffer, off, bytes, 0, length);
+
+                    string decodedString = System.Text.Encoding.ASCII.GetString(bytes);
+                    dst.SetData(elm.MemberName, decodedString);
+
+                    //Debug.Log($"len={length} {elm.MemberName} : string {decodedString}");
                     break;
                 default:
                     throw new InvalidCastException("Error: Can not found ptype: " + elm.MemberName);
