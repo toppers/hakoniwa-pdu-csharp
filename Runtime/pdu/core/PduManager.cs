@@ -22,6 +22,23 @@ namespace hakoniwa.pdu.core
             string fullPath = System.IO.Path.Combine(config_path, "custom");
             pdu_channel_config = pdu_channel_loader.Load(fullPath, ".json");
         }
+        static string RemoveJsonExtension(string path)
+        {
+            if (path.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+            {
+                return path.Substring(0, path.Length - 5);
+            }
+            return path;
+        }
+        public PduManager(IEnvironmentService srv, string config_path, string custom_json_filepath)
+        {
+            service = srv;
+            pdu_definition_loader = new PduDataDefinitionLoader(service.GetFileLoader(), config_path);
+            PduChannelLoader pdu_channel_loader= new PduChannelLoader(service.GetFileLoader());
+            string fullPath = RemoveJsonExtension(custom_json_filepath);
+            pdu_channel_config = pdu_channel_loader.Load(fullPath, ".json");
+        }
+        
         private async Task<bool> DeclarePdu(string robotName, string pduName, uint magicNumber)
         {
             var communication = service.GetCommunication();
