@@ -22,6 +22,7 @@ namespace hakoniwa.pdu.core
             int currentSize = data.Count;
             if (currentSize < expectedOffset)
             {
+                //Console.WriteLine($"Warning: Allocator size {currentSize} is less than expected offset {expectedOffset}. Padding with zeros.");
                 data.AddRange(new byte[expectedOffset - currentSize]);
             }
             data.AddRange(new ArraySegment<byte>(bytes, 0, count));
@@ -122,7 +123,9 @@ namespace hakoniwa.pdu.core
                         {
                             int offset_from_heap = heap_allocator.Size;
                             //Console.WriteLine($"ENC {fieldName}: heap_off={heap_allocator.Size}");
-                            int array_size = ConvertFromStructArray(0, elm, heap_allocator, src);
+                            //Console.WriteLine($"ENC {fieldName}: parent_off={parent_off} elm_off={elm.ByteMemberOffset}");
+                            int array_size = ConvertFromStructArray(parent_off, elm, heap_allocator, src);
+                            //int array_size = ConvertFromStructArray(0, elm, heap_allocator, src);
                             //Console.WriteLine($"ENC {fieldName}: array_size={array_size}");
                             var offset_from_heap_bytes = BitConverter.GetBytes(offset_from_heap);
                             var array_size_bytes = BitConverter.GetBytes(array_size);
@@ -135,7 +138,8 @@ namespace hakoniwa.pdu.core
                             ConvertFromStruct(parent_off + elm.ByteMemberOffset, allocator, src.GetData<IPdu>(elm.MemberName));
                         }
                     }
-                }            }
+                }
+            }
             else
             {
                 throw new InvalidCastException("IPdu オブジェクトを Pdu にキャストできませんでした。");
