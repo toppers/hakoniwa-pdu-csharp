@@ -125,6 +125,10 @@ namespace hakoniwa.environment.impl.local
                 {
                     Console.WriteLine($"Socket Exception: {e.Message}");
                 }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Receive error: {e.Message}");
+                }
             }
         }
 

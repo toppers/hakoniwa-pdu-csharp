@@ -221,6 +221,17 @@ namespace hakoniwa.pdu.core
             string typeName;
             GetPackageTypeName(robotName, pduName, out packageName, out typeName);
 
+            var definition = pdu_definition_loader.LoadDefinition(packageName + "/" + typeName);
+            int minimumLength = HakoPduMetaDataType.PduMetaDataSize + definition.TotalSize;
+            if (raw_data.Length < minimumLength)
+            {
+                int configuredSize = pdu_channel_config.GetPduSize(robotName, pduName);
+                throw new ArgumentException(
+                    $"PDU payload is shorter than expected for {robotName}/{pduName} ({packageName}/{typeName}). " +
+                    $"received={raw_data.Length}, minimum_expected={minimumLength}, configured_pdu_size={configuredSize}. " +
+                    $"This usually means the Unity-side PDU definition does not match the sender side channel/type mapping, or packet version/config is mismatched.");
+            }
+
             return decoder.Decode(pduName, packageName, typeName, raw_data);
         }
         // robotNameとpduNameからpackageNameとtypeNameを抽出するメソッド

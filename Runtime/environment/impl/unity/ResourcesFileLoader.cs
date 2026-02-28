@@ -13,11 +13,23 @@ namespace hakoniwa.environment.impl.unity
 
         public string LoadText(string filePath, string extension = null)
         {
-            // ./や先頭の/を削除した形でfullPathを作成
-            //string fullPath = filePath.StartsWith("./") ? filePath.Substring(2) : filePath.TrimStart('/');
-            string fullPath = filePath.StartsWith("." + Path.DirectorySeparatorChar.ToString())
-                ? filePath.Substring(2)
-                : filePath.TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            string fullPath = filePath.Replace(Path.DirectorySeparatorChar, '/')
+                .Replace(Path.AltDirectorySeparatorChar, '/');
+
+            if (fullPath.StartsWith("./"))
+            {
+                fullPath = fullPath.Substring(2);
+            }
+            else
+            {
+                fullPath = fullPath.TrimStart('/');
+            }
+
+            if (!string.IsNullOrEmpty(extension) && fullPath.EndsWith(extension))
+            {
+                fullPath = fullPath.Substring(0, fullPath.Length - extension.Length);
+            }
+
             TextAsset textAsset = Resources.Load<TextAsset>(fullPath);
             if (textAsset == null)
             {

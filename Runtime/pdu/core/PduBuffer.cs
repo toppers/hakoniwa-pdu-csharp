@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using hakoniwa.environment.interfaces;
 
 namespace hakoniwa.pdu.core
@@ -77,6 +78,7 @@ namespace hakoniwa.pdu.core
             string pduName = this.channel_config.GetPduName(packet.GetRobotName(), packet.GetChannelId());
             if (pduName != null)
             {
+                ValidatePacketSize(packet.GetRobotName(), pduName, packet.GetPduData());
                 //string key = packet.GetRobotName() + "_" + pduName;
                 string key = GetKey(packet.GetRobotName(), pduName);
                 //Console.WriteLine($"put packet: {key}");
@@ -88,10 +90,28 @@ namespace hakoniwa.pdu.core
             string pduName = this.channel_config.GetPduName(robotName, channelId);
             if (pduName != null)
             {
+                ValidatePacketSize(robotName, pduName, pdu_data);
                 //string key = robotName + "_" + pduName;
                 string key = GetKey(robotName, pduName);
                 //Console.WriteLine($"put packet: {key}");
                 this.SetBuffer(key, pdu_data);
+            }
+        }
+
+        private void ValidatePacketSize(string robotName, string pduName, byte[] pduData)
+        {
+            if (pduData == null)
+            {
+                throw new InvalidDataException($"PDU payload is null for {robotName}/{pduName}.");
+            }
+
+            int expectedSize = this.channel_config.GetPduSize(robotName, pduName);
+            if (expectedSize > 0 && pduData.Length < expectedSize)
+            {
+                throw new InvalidDataException(
+                    $"Received PDU payload is shorter than configured for {robotName}/{pduName}. " +
+                    $"received={pduData.Length}, configured={expectedSize}. " +
+                    $"Check that both sides use the same pdudef/pdutypes and packet version.");
             }
         }
     }
