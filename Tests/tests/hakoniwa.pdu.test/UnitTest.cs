@@ -238,4 +238,69 @@ public class UnitTest
 
         mgr.StopService();
     }
+
+    [Fact]
+    public void CompactPduDefinition_CanResolveChannelSizeAndType()
+    {
+        string robotName = "Drone-1";
+        string pduName = "pos";
+        string customJsonPath = System.IO.Path.Combine(testDir, "new-pdudef.json");
+        IEnvironmentService service = EnvironmentServiceFactory.Create("dummy");
+        PduManager mgr = new PduManager(service, testDir, customJsonPath);
+        mgr.StartService();
+
+        Assert.Equal(1, mgr.GetChannelId(robotName, pduName));
+        Assert.Equal(72, mgr.GetPduSize(robotName, pduName));
+
+        IPdu pdu = mgr.CreatePdu(robotName, pduName);
+        Assert.NotNull(pdu);
+        Assert.Equal("geometry_msgs", pdu.PackageName);
+        Assert.Equal("Twist", pdu.TypeName);
+        Assert.Equal("pos", pdu.Name);
+
+        mgr.StopService();
+    }
+
+    [Fact]
+    public void CompactPduDefinition_CanResolveSamePduForAnotherRobot()
+    {
+        string robotName = "Drone-2";
+        string pduName = "pos";
+        string customJsonPath = System.IO.Path.Combine(testDir, "new-pdudef.json");
+        IEnvironmentService service = EnvironmentServiceFactory.Create("dummy");
+        PduManager mgr = new PduManager(service, testDir, customJsonPath);
+        mgr.StartService();
+
+        Assert.Equal(1, mgr.GetChannelId(robotName, pduName));
+        Assert.Equal(72, mgr.GetPduSize(robotName, pduName));
+
+        IPdu pdu = mgr.CreatePdu(robotName, pduName);
+        Assert.NotNull(pdu);
+        Assert.Equal("geometry_msgs", pdu.PackageName);
+        Assert.Equal("Twist", pdu.TypeName);
+        Assert.Equal("pos", pdu.Name);
+
+        mgr.StopService();
+    }
+
+    [Fact]
+    public void LegacyPduDefinition_StillResolvesChannelSizeAndType()
+    {
+        string robotName = "DroneTransporter";
+        string pduName = "drone_pos";
+        IEnvironmentService service = EnvironmentServiceFactory.Create("dummy");
+        PduManager mgr = new PduManager(service, testDir);
+        mgr.StartService();
+
+        Assert.Equal(1, mgr.GetChannelId(robotName, pduName));
+        Assert.Equal(72, mgr.GetPduSize(robotName, pduName));
+
+        IPdu pdu = mgr.CreatePdu(robotName, pduName);
+        Assert.NotNull(pdu);
+        Assert.Equal("geometry_msgs", pdu.PackageName);
+        Assert.Equal("Twist", pdu.TypeName);
+        Assert.Equal("drone_pos", pdu.Name);
+
+        mgr.StopService();
+    }
 }
