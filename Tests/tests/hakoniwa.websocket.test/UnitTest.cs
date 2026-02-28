@@ -60,10 +60,11 @@ namespace hakoniwa.environment.test
                 }
                 else
                 {
-                    var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                    Console.WriteLine($"Server received message: {message}");
-                    await webSocket.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(message)),
-                        WebSocketMessageType.Text, true, cancellationToken);
+                    byte[] message = new byte[result.Count];
+                    Array.Copy(buffer, 0, message, 0, result.Count);
+                    Console.WriteLine($"Server received {result.Count} bytes.");
+                    await webSocket.SendAsync(new ArraySegment<byte>(message),
+                        WebSocketMessageType.Binary, true, cancellationToken);
                 }
             }
         }
@@ -106,6 +107,36 @@ namespace hakoniwa.environment.test
             Assert.Equal(sendData, receivedPacket.GetPduData());
 
             // WebSocketサービスとサーバーを停止
+            await webSocketService.StopService();
+            StopWebSocketServer();
+        }
+
+        [Fact]
+        public async Task Test_WebSocketCommunicationService_Echo_V2()
+        {
+            using var cts = new CancellationTokenSource();
+            await StartWebSocketServer(cts.Token);
+
+            var buffer = new CommunicationBufferMock();
+            var webSocketService = new WebSocketCommunicationService(serverUri, "v2");
+            var result = await webSocketService.StartService(buffer);
+            Assert.True(result, "Failed websocket start");
+
+            await Task.Delay(500);
+
+            string robotName = "Drone-1";
+            int channelId = 7;
+            byte[] sendData = Encoding.UTF8.GetBytes("Hello WebSocket v2");
+
+            var sendResult = await webSocketService.SendData(robotName, channelId, sendData);
+            Assert.True(sendResult, "Failed to send data.");
+
+            var receivedPacket = await WaitForEcho(buffer);
+            Assert.NotNull(receivedPacket);
+            Assert.Equal(robotName, receivedPacket.GetRobotName());
+            Assert.Equal(channelId, receivedPacket.GetChannelId());
+            Assert.Equal(sendData, receivedPacket.GetPduData());
+
             await webSocketService.StopService();
             StopWebSocketServer();
         }

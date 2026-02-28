@@ -12,6 +12,7 @@ namespace hakoniwa.environment.impl.local
         private readonly int localPort;
         private readonly string remoteAddress;
         private readonly int remotePort;
+        private readonly string packetVersion;
         private UdpClient udpClient;
         private CancellationTokenSource cancellationTokenSource;
         private Task receiveTask;
@@ -22,11 +23,12 @@ namespace hakoniwa.environment.impl.local
             return null;
         }
 
-        public UDPCommunicationService(int localPort, string remoteAddress, int remotePort)
+        public UDPCommunicationService(int localPort, string remoteAddress, int remotePort, string packetVersion = "v1")
         {
             this.localPort = localPort;
             this.remoteAddress = remoteAddress;
             this.remotePort = remotePort;
+            this.packetVersion = packetVersion;
         }
         public Task<bool> StartService(ICommunicationBuffer comm_buffer, string uri = null)
         {
@@ -86,14 +88,14 @@ namespace hakoniwa.environment.impl.local
 
             try
             {
-                IDataPacket packet = new DataPacket()
+                var packet = new DataPacket()
                 {
                     RobotName = robotName,
                     ChannelId = channelId,
                     BodyData = pdu_data
                 };
                 var endPoint = new IPEndPoint(IPAddress.Parse(remoteAddress), remotePort);
-                var data = packet.Encode();
+                var data = packet.Encode(packetVersion);
                 await udpClient.SendAsync(data, data.Length, endPoint);
                 return true;
             }
@@ -115,7 +117,7 @@ namespace hakoniwa.environment.impl.local
                     // 受信データの処理
                     //Console.WriteLine($"Received Data: {BitConverter.ToString(receivedData)}");
 
-                    IDataPacket packet = DataPacket.Decode(receivedData);
+                    IDataPacket packet = DataPacket.Decode(receivedData, packetVersion);
                     buffer.PutPacket(packet);
 
                 }

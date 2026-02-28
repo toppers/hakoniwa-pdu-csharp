@@ -11,6 +11,7 @@ namespace hakoniwa.environment.impl.local
     public class WebSocketCommunicationService : ICommunicationService, IDisposable
     {
         private string serverUri;
+        private readonly string packetVersion;
         private ClientWebSocket webSocket;
         private CancellationTokenSource cancellationTokenSource;
         private Task receiveTask;
@@ -23,9 +24,10 @@ namespace hakoniwa.environment.impl.local
             return serverUri;
         }
 
-        public WebSocketCommunicationService(string serverUri)
+        public WebSocketCommunicationService(string serverUri, string packetVersion = "v1")
         {
             this.serverUri = serverUri;
+            this.packetVersion = packetVersion;
         }
 
         public async Task<bool> StartService(ICommunicationBuffer comm_buffer, string uri = null)
@@ -63,14 +65,16 @@ namespace hakoniwa.environment.impl.local
 
         private async Task ReceiveData(CancellationToken ct)
         {
-            var headerBuffer = new byte[4];
             Console.WriteLine("Start ReceiveData...");
             while (!ct.IsCancellationRequested && webSocket.State == WebSocketState.Open)
             {
-                WebSocketReceiveResult headerResult;
                 try
                 {
-                    headerResult = await webSocket.ReceiveAsync(new ArraySegment<byte>(headerBuffer), ct);
+                    IDataPacket packet = await ReceivePacket(ct);
+                    if (packet != null)
+                    {
+                        buffer.PutPacket(packet);
+                    }
                 }
                 catch (OperationCanceledException)
                 {
@@ -82,45 +86,36 @@ namespace hakoniwa.environment.impl.local
                     Console.WriteLine($"Receive error: {ex.Message}");
                     break;
                 }
+            }
+        }
 
-                if (headerResult.Count < 4)
+        private async Task<IDataPacket> ReceivePacket(CancellationToken ct)
+        {
+            var chunkBuffer = new byte[4096];
+            using var stream = new System.IO.MemoryStream();
+
+            while (!ct.IsCancellationRequested)
+            {
+                var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(chunkBuffer), ct);
+                if (result.MessageType == WebSocketMessageType.Close)
                 {
-                    Console.WriteLine($"Header size is less than expected: {headerResult.Count}");
-                    continue;
+                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, ct);
+                    return null;
                 }
 
-                int totalLength = BitConverter.ToInt32(headerBuffer, 0);
-                var dataBuffer = new byte[4 + totalLength];
-                Array.Copy(headerBuffer, 0, dataBuffer, 0, 4);
-
-                int bytesRead = 0;
-                while (bytesRead < totalLength && !ct.IsCancellationRequested)
+                stream.Write(chunkBuffer, 0, result.Count);
+                if (result.EndOfMessage)
                 {
-                    try
-                    {
-                        var segment = new ArraySegment<byte>(dataBuffer, 4 + bytesRead, totalLength - bytesRead);
-                        WebSocketReceiveResult result = await webSocket.ReceiveAsync(segment, ct);
-                        bytesRead += result.Count;
-
-                        if (result.MessageType == WebSocketMessageType.Close)
-                        {
-                            await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, ct);
-                            return;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error receiving data: {ex.Message}");
-                        break;
-                    }
-                }
-
-                if (bytesRead == totalLength)
-                {
-                    IDataPacket packet = DataPacket.Decode(dataBuffer);
-                    buffer.PutPacket(packet);
+                    break;
                 }
             }
+
+            if (stream.Length == 0)
+            {
+                return null;
+            }
+
+            return DataPacket.Decode(stream.ToArray(), packetVersion);
         }
 
         public async Task<bool> SendData(string robotName, int channelId, byte[] pdu_data)
@@ -131,14 +126,14 @@ namespace hakoniwa.environment.impl.local
                 return false;
             }
 
-            IDataPacket packet = new DataPacket()
+            var packet = new DataPacket()
             {
                 RobotName = robotName,
                 ChannelId = channelId,
                 BodyData = pdu_data
             };
 
-            var data = packet.Encode();
+            var data = packet.Encode(packetVersion);
 
             try
             {

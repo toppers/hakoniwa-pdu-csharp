@@ -10,6 +10,7 @@ using UnityEngine;
 public class WebGLSocketCommunicationService : ICommunicationService, IDisposable
 {
     private readonly string serverUri;
+    private readonly string packetVersion;
     private WebSocket webSocket;
     private ICommunicationBuffer buffer;
     private bool isServiceEnabled = false;
@@ -19,9 +20,10 @@ public class WebGLSocketCommunicationService : ICommunicationService, IDisposabl
     {
         return webSocket;
     }
-    public WebGLSocketCommunicationService(string serverUri)
+    public WebGLSocketCommunicationService(string serverUri, string packetVersion = "v1")
     {
         this.serverUri = serverUri;
+        this.packetVersion = packetVersion;
     }
 
     public bool IsServiceEnabled()
@@ -37,14 +39,14 @@ public class WebGLSocketCommunicationService : ICommunicationService, IDisposabl
             return false;
         }
 
-        IDataPacket packet = new DataPacket()
+        var packet = new DataPacket()
         {
             RobotName = robotName,
             ChannelId = channelId,
             BodyData = pdu_data
         };
 
-        var data = packet.Encode();
+        var data = packet.Encode(packetVersion);
 
         try
         {
@@ -91,29 +93,8 @@ public class WebGLSocketCommunicationService : ICommunicationService, IDisposabl
 
             try
             {
-                // 4バイトのヘッダーを読み取り、メッセージ全体の長さを取得
-                if (bytes.Length < 4)
-                {
-                    Debug.LogWarning("Header is incomplete.");
-                    return;
-                }
-
-                int totalLength = BitConverter.ToInt32(bytes, 0);
-                //Debug.Log("Total Length: " + totalLength);
-
-                // データの長さが一致する場合のみ処理を続ける
-                if (bytes.Length == 4 + totalLength)
-                {
-                    //DumpDataBuffer(completeData);
-
-                    IDataPacket packet = DataPacket.Decode(bytes);
-                    buffer.PutPacket(packet);
-                    //Debug.Log("Data received and processed.");
-                }
-                else
-                {
-                    Debug.LogWarning("Received data length mismatch.");
-                }
+                IDataPacket packet = DataPacket.Decode(bytes, packetVersion);
+                buffer.PutPacket(packet);
             }
             catch (Exception ex)
             {

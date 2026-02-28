@@ -60,6 +60,41 @@ namespace hakoniwa.environment.test
             await receiverService.StopService();
             Console.WriteLine("INFO: DONE");
         }
+
+        [Fact]
+        public async Task Test_UDPCommunicationService_SendAndReceive_V2()
+        {
+            int v2SenderPort = 11010;
+            int v2ReceiverPort = 11011;
+
+            var receiverBuffer = new CommunicationBufferMock();
+            var receiverService = new UDPCommunicationService(v2ReceiverPort, remoteAddress, v2SenderPort, "v2");
+            var ret = await receiverService.StartService(receiverBuffer);
+            Assert.True(ret, "StartService is Failed");
+
+            var senderBuffer = new CommunicationBufferMock();
+            var senderService = new UDPCommunicationService(v2SenderPort, remoteAddress, v2ReceiverPort, "v2");
+            ret = await senderService.StartService(senderBuffer);
+            Assert.True(ret, "StartService is Failed");
+
+            string robotName = "Drone-1";
+            int channelId = 7;
+            byte[] sendData = Encoding.UTF8.GetBytes("Hello UDP v2");
+
+            var sendResult = await senderService.SendData(robotName, channelId, sendData);
+            Assert.True(sendResult, "Failed to send data.");
+
+            await Task.Delay(500);
+
+            var receivedPacket = receiverBuffer.GetLatestPacket();
+            Assert.NotNull(receivedPacket);
+            Assert.Equal(robotName, receivedPacket.GetRobotName());
+            Assert.Equal(channelId, receivedPacket.GetChannelId());
+            Assert.Equal(sendData, receivedPacket.GetPduData());
+
+            await senderService.StopService();
+            await receiverService.StopService();
+        }
     }
 
     // テスト用のバッファモック

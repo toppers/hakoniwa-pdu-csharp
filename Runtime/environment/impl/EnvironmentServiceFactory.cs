@@ -20,10 +20,12 @@ namespace hakoniwa.environment.impl
         public int LocalPort;
         public int RemotePort;
         public string RemoteIPAddress;
+        public string CommRawVersion;
 #else
         public int LocalPort { get; set; }
         public int RemotePort { get; set; }
         public string RemoteIPAddress { get; set; }
+        public string CommRawVersion { get; set; } = "v1";
 #endif
     }
 
@@ -32,8 +34,10 @@ namespace hakoniwa.environment.impl
     {
 #if UNITY_WEBGL
         public string ServerURI;
+        public string CommRawVersion;
 #else
         public string ServerURI { get; set; }
+        public string CommRawVersion { get; set; } = "v1";
 #endif
     }
 
@@ -79,11 +83,13 @@ namespace hakoniwa.environment.impl
                 {
                     LocalPort = GetIntValue("localPort"),
                     RemotePort = GetIntValue("remotePort"),
-                    RemoteIPAddress = GetStringValue("remoteIPAddress")
+                    RemoteIPAddress = GetStringValue("remoteIPAddress"),
+                    CommRawVersion = GetStringValue("commRawVersion") ?? "v1"
                 },
                 WebSocket = new WebSocketConfig
                 {
-                    ServerURI = GetStringValue("serverURI")
+                    ServerURI = GetStringValue("serverURI"),
+                    CommRawVersion = GetStringValue("commRawVersion") ?? "v1"
                 }
             };
 
@@ -156,20 +162,20 @@ namespace hakoniwa.environment.impl
             else if (service_type == "udp")
             {
                 var config = LoadCommServiceConfig(path);
-                comm_service = new UDPCommunicationService(config.Udp.LocalPort, config.Udp.RemoteIPAddress, config.Udp.RemotePort);
+                comm_service = new UDPCommunicationService(config.Udp.LocalPort, config.Udp.RemoteIPAddress, config.Udp.RemotePort, config.Udp.CommRawVersion ?? "v1");
             }
             else if (service_type == "websocket_dotnet")
             {
                 var config = LoadCommServiceConfig(path);
                 string serverUri = config.WebSocket.ServerURI;
-                comm_service = new WebSocketCommunicationService(serverUri);
+                comm_service = new WebSocketCommunicationService(serverUri, config.WebSocket.CommRawVersion ?? "v1");
             }
 #if UNITY_WEBGL
             else if (service_type == "websocket_unity")
             {
                 var config = LoadCommServiceConfig(path);
                 string serverUri = config.WebSocket.ServerURI;
-                comm_service = new WebGLSocketCommunicationService(serverUri);
+                comm_service = new WebGLSocketCommunicationService(serverUri, config.WebSocket.CommRawVersion ?? "v1");
             }
 #endif
         }
