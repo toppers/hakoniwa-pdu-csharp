@@ -2,6 +2,8 @@
 
 箱庭の PDU 通信を C# / Unity / WebGL から扱うためのパッケージです。
 
+English README: [README_en.md](./README_en.md)
+
 このパッケージでできること:
 
 - PDU 定義に基づいて型付き PDU を生成する
@@ -24,7 +26,7 @@
 - 既存の `hakoniwa-webserver` 構成を維持したい人
 - 新しく bridge / endpoint ベース構成へ移行したい人
 
-上位リポジトリを含む詳細な移行判断は [MIGRATION_GUIDE.md](/Users/tmori/project/oss/hakoniwa-pdu-csharp/MIGRATION_GUIDE.md) を参照してください。
+上位リポジトリを含む詳細な移行判断は [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md) を参照してください。
 
 ## はじめに何を選べばよいか
 
@@ -203,5 +205,5 @@ this.transform.position = hakoniwa.pdu.Frame.toUnityPosFromPdu(twist.linear);
 
 詳細は以下を参照してください。
 
-- 日本語版: [MIGRATION_GUIDE.md](/Users/tmori/project/oss/hakoniwa-pdu-csharp/MIGRATION_GUIDE.md)
-- 英語版: [MIGRATION_GUIDE_en.md](/Users/tmori/project/oss/hakoniwa-pdu-csharp/MIGRATION_GUIDE_en.md)
+- 日本語版: [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md)
+- 英語版: [MIGRATION_GUIDE_en.md](./MIGRATION_GUIDE_en.md)

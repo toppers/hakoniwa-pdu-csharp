@@ -1,5 +1,7 @@
 # 上位リポジトリ向け移行ガイド
 
+English migration guide: [MIGRATION_GUIDE_en.md](./MIGRATION_GUIDE_en.md)
+
 この文書は、`hakoniwa-pdu-csharp` の以下の変更を、上位リポジトリへどう波及させるかを整理するためのものです。
 
 - compact 形式の PDU 定義ファイル対応

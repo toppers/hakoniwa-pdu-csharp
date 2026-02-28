@@ -2,6 +2,8 @@
 
 A pure C# package implementing Hakoniwa PDU (Protocol Data Unit) communication for Unity, .NET, and WebGL.
 
+Japanese README: [README.md](./README.md)
+
 ## Installation
 
 Add this package to `Packages/manifest.json`:
@@ -75,5 +77,5 @@ Important points:
 
 Details:
 
-- Japanese migration guide: [MIGRATION_GUIDE.md](/Users/tmori/project/oss/hakoniwa-pdu-csharp/MIGRATION_GUIDE.md)
-- English migration guide: [MIGRATION_GUIDE_en.md](/Users/tmori/project/oss/hakoniwa-pdu-csharp/MIGRATION_GUIDE_en.md)
+- Japanese migration guide: [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md)
+- English migration guide: [MIGRATION_GUIDE_en.md](./MIGRATION_GUIDE_en.md)

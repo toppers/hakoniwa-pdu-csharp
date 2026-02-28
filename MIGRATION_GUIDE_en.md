@@ -1,5 +1,7 @@
 # Migration Guide For Upstream Repositories
 
+Japanese migration guide: [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md)
+
 This document explains how the `hakoniwa-pdu-csharp` changes in `1.6.0` affect upstream repositories.
 
 Main additions:
