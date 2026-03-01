@@ -24,6 +24,11 @@ namespace hakoniwa.environment.impl.local
             return serverUri;
         }
 
+        public string GetPacketVersion()
+        {
+            return packetVersion;
+        }
+
         public WebSocketCommunicationService(string serverUri, string packetVersion = "v1")
         {
             this.serverUri = serverUri;

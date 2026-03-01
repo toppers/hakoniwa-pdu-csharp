@@ -14,6 +14,72 @@ public class UnitTest
 {
     private static readonly string testDir = "test_data";
 
+    private sealed class RecordingCommunicationService : ICommunicationService
+    {
+        private readonly string packetVersion;
+        private bool isServiceEnabled;
+
+        public int SendCount { get; private set; }
+        public string LastRobotName { get; private set; }
+        public int LastChannelId { get; private set; }
+        public byte[] LastPayload { get; private set; }
+
+        public RecordingCommunicationService(string packetVersion)
+        {
+            this.packetVersion = packetVersion;
+            LastRobotName = string.Empty;
+            LastPayload = Array.Empty<byte>();
+        }
+
+        public Task<bool> StartService(ICommunicationBuffer comm_buffer, string uri = null)
+        {
+            isServiceEnabled = true;
+            return Task.FromResult(true);
+        }
+
+        public Task<bool> StopService()
+        {
+            isServiceEnabled = false;
+            return Task.FromResult(true);
+        }
+
+        public bool IsServiceEnabled()
+        {
+            return isServiceEnabled;
+        }
+
+        public Task<bool> SendData(string robotName, int channelId, byte[] pdu_data)
+        {
+            SendCount++;
+            LastRobotName = robotName;
+            LastChannelId = channelId;
+            LastPayload = pdu_data;
+            return Task.FromResult(true);
+        }
+
+        public string GetServerUri()
+        {
+            return "test://recording";
+        }
+
+        public string GetPacketVersion()
+        {
+            return packetVersion;
+        }
+    }
+
+    private static PduManager CreateManagerWithPacketVersion(
+        string packetVersion,
+        out RecordingCommunicationService communication)
+    {
+        IEnvironmentService service = EnvironmentServiceFactory.Create("dummy", "local", testDir);
+        communication = new RecordingCommunicationService(packetVersion);
+        service.SetCommunication(communication);
+        PduManager mgr = new PduManager(service, testDir);
+        mgr.StartService();
+        return mgr;
+    }
+
     [Fact]
     public void Test_Twist()
     {
@@ -300,6 +366,52 @@ public class UnitTest
         Assert.Equal("geometry_msgs", pdu.PackageName);
         Assert.Equal("Twist", pdu.TypeName);
         Assert.Equal("drone_pos", pdu.Name);
+
+        mgr.StopService();
+    }
+
+    [Fact]
+    public async Task DeclarePduForRead_SendsPacketOnlyForV1()
+    {
+        PduManager mgr = CreateManagerWithPacketVersion("v1", out var communication);
+
+        bool ret = await mgr.DeclarePduForRead("DroneTransporter", "drone_pos");
+
+        Assert.True(ret);
+        Assert.Equal(1, communication.SendCount);
+        Assert.Equal("DroneTransporter", communication.LastRobotName);
+        Assert.Equal(1, communication.LastChannelId);
+        Assert.Equal(BitConverter.GetBytes(PduMagicNumbers.DeclarePduForRead), communication.LastPayload);
+
+        mgr.StopService();
+    }
+
+    [Theory]
+    [InlineData("v2")]
+    [InlineData("v3")]
+    public async Task DeclarePduForRead_DoesNotSendPacketForV2OrLater(string packetVersion)
+    {
+        PduManager mgr = CreateManagerWithPacketVersion(packetVersion, out var communication);
+
+        bool ret = await mgr.DeclarePduForRead("DroneTransporter", "drone_pos");
+
+        Assert.True(ret);
+        Assert.Equal(0, communication.SendCount);
+
+        mgr.StopService();
+    }
+
+    [Theory]
+    [InlineData("v2")]
+    [InlineData("v3")]
+    public async Task DeclarePduForWrite_DoesNotSendPacketForV2OrLater(string packetVersion)
+    {
+        PduManager mgr = CreateManagerWithPacketVersion(packetVersion, out var communication);
+
+        bool ret = await mgr.DeclarePduForWrite("DroneTransporter", "drone_pos");
+
+        Assert.True(ret);
+        Assert.Equal(0, communication.SendCount);
 
         mgr.StopService();
     }

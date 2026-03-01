@@ -14,6 +14,10 @@ namespace hakoniwa.environment.impl.local
         {
             return null;
         }
+        public string GetPacketVersion()
+        {
+            return "v1";
+        }
 
         public bool IsServiceEnabled()
         {

@@ -22,6 +22,10 @@ namespace hakoniwa.environment.impl.local
         {
             return null;
         }
+        public string GetPacketVersion()
+        {
+            return packetVersion;
+        }
 
         public UDPCommunicationService(int localPort, string remoteAddress, int remotePort, string packetVersion = "v1")
         {

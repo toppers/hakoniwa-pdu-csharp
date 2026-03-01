@@ -18,5 +18,6 @@ namespace hakoniwa.environment.interfaces
         Task<bool> SendData(string robotName, int channelId, byte[] pdu_data);
 
         string GetServerUri();
+        string GetPacketVersion();
     }
 }

@@ -20,6 +20,10 @@ public class WebGLSocketCommunicationService : ICommunicationService, IDisposabl
     {
         return webSocket;
     }
+    public string GetPacketVersion()
+    {
+        return packetVersion;
+    }
     public WebGLSocketCommunicationService(string serverUri, string packetVersion = "v1")
     {
         this.serverUri = serverUri;

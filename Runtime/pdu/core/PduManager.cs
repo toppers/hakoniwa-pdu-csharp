@@ -46,6 +46,10 @@ namespace hakoniwa.pdu.core
             {
                 return false;
             }
+            if (!string.Equals(communication.GetPacketVersion(), "v1", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
 
             int channel_id = pdu_channel_config.GetChannelId(robotName, pduName);
             if (channel_id < 0)
